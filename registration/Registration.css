@@ -32,7 +32,7 @@ body {
   padding-top: 80px;
 }
 
-.login-box {
+.registration-box {
   background-color: transparent;
   padding: 50px 60px;
   border-radius: 20px;
@@ -41,22 +41,22 @@ body {
   width: 90%;
 }
 
-.login-box h2 {
+.registration-box h2 {
   margin-bottom: 30px;
   font-size: 2rem;
   text-align: center;
 }
 
-.login-box form {
+.registration-box form {
   display: flex;
   flex-direction: column;
   align-items: stretch;
 }
 
-.login-box input[type="text"],
-.login-box input[type="password"],
-.login-box input[type="email"],
-.login-box input[type="number"] {
+.registration-box input[type="text"],
+.registration-box input[type="password"],
+.registration-box input[type="email"],
+.registration-box input[type="number"] {
   width: 100%;
   padding: 16px;
   margin-bottom: 18px;
@@ -121,19 +121,19 @@ body {
   transform: translateX(24px);
 }
 
-.login-box button {
+.registration-box button {
   padding: 14px 40px;
   background-color: #333;
   color: white;
   border: none;
   border-radius: 10px;
   font-size: 1rem;
-  align-self: center;
+  align-self: flex-end;
   margin-top: 10px;
   transition: background-color 0.2s ease;
 }
 
-.login-box button:hover {
+.registration-box button:hover {
   background-color: #444;
 }
 

@@ -1,41 +1,34 @@
-document.addEventListener('DOMContentLoaded', function() {
-    // Slider functionality
-    const slider = document.querySelector('.slider');
-    const slides = document.querySelectorAll('.slide');
-    const dots = document.querySelectorAll('.dot');
-    const prevBtn = document.querySelector('.prev');
-    const nextBtn = document.querySelector('.next');
-    
-    let currentIndex = 0;
-    const slideCount = slides.length;
-    
-    function updateSlider() {
-        slider.style.transform = `translateX(-${currentIndex * 100}%)`;
+const slides = document.querySelectorAll('.slide');
+  const dots = document.querySelectorAll('.dot');
+  const prev = document.querySelector('.arrow.left');
+  const next = document.querySelector('.arrow.right');
 
-        dots.forEach((dot, index) => {
-            dot.classList.toggle('active', index === currentIndex);
-        });
-    }
-    
-    nextBtn.addEventListener('click', () => {
-        currentIndex = (currentIndex + 1) % slideCount;
-        updateSlider();
+  let current = 0;
+
+  function updateSlider(index) {
+    slides.forEach((slide, i) => {
+      slide.classList.toggle('active', i === index);
     });
-    
-    prevBtn.addEventListener('click', () => {
-        currentIndex = (currentIndex - 1 + slideCount) % slideCount;
-        updateSlider();
+    dots.forEach((dot, i) => {
+      dot.classList.toggle('active', i === index);
     });
-    
-    dots.forEach((dot, index) => {
-        dot.addEventListener('click', () => {
-            currentIndex = index;
-            updateSlider();
-        });
+  }
+
+  prev.addEventListener('click', () => {
+    current = (current - 1 + slides.length) % slides.length;
+    updateSlider(current);
+  });
+
+  next.addEventListener('click', () => {
+    current = (current + 1) % slides.length;
+    updateSlider(current);
+  });
+
+  dots.forEach((dot, index) => {
+    dot.addEventListener('click', () => {
+      current = index;
+      updateSlider(current);
     });
-    
-    setInterval(() => {
-        currentIndex = (currentIndex + 1) % slideCount;
-        updateSlider();
-    }, 5000);
-});
+  });
+
+  updateSlider(current);
