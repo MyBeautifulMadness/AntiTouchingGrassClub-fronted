@@ -3,12 +3,11 @@ let profileData = {};
 let bookingsData = [];
 let branchesData = [];
 
-// Проверка авторизации
-/*if (!authToken) {
+if (!authToken) {
   window.location.href = '/login/Login.html';
-}*/
+  alert("токена нет");
+}
 
-// Тестовые данные профиля
 const testProfileData = {
   id: "user123",
   username: "KERRIGAN",
@@ -29,7 +28,9 @@ const testBookingsData = [
     startTime: "2025-06-28T10:00:00.000Z",
     endTime: "2025-06-28T12:00:00.000Z",
     paymentMethod: "QR_ONLINE",
-    finalPrice: "300 ₽"
+    finalPrice: "300 ₽",
+    qrConfirmationId: "qr-confirm-123",
+    qrPaymentId: "qr-pay-123"
   },
   {
     id: "booking2",
@@ -41,18 +42,18 @@ const testBookingsData = [
     startTime: "2025-06-29T14:00:00.000Z",
     endTime: "2025-06-29T16:00:00.000Z",
     paymentMethod: "QR_OFFLINE",
-    finalPrice: "500 ₽"
+    finalPrice: "500 ₽",
+    qrConfirmationId: "qr-confirm-456",
+    qrPaymentId: "qr-pay-456"
   }
 ];
 
-// Тестовые данные филиалов
 const testBranchesData = [
   { id: "branch1", name: "Филиал Центральный" },
   { id: "branch2", name: "Филиал Северный" },
   { id: "branch3", name: "Филиал Западный" }
 ];
 
-// Тестовые данные компьютеров
 const testPcsData = {
   branch1: [
     { id: "pc1", number: "1", status: "FREE", priceLevel: "STANDARD", positionX: 0, positionY: 0 },
@@ -73,10 +74,9 @@ const testPcsData = {
   ]
 };
 
-// Загрузка данных профиля
 function loadProfileData() {
-  /*
-  fetch('http://localhost:8080/api/profile', {
+
+  fetch('http://localhost:8080/profile', {
     headers: {
       'Authorization': `Bearer ${authToken}`
     }
@@ -94,16 +94,12 @@ function loadProfileData() {
     profileData = testProfileData;
     renderProfileInfo();
   });
-  */
 
-  profileData = testProfileData;
-  renderProfileInfo();
 }
 
-// Загрузка данных бронирований
 function loadBookingsData() {
-  /*
-  fetch('http://localhost:8080/api/profile/bookings', {
+
+  fetch('http://localhost:8080/profile/bookings', {
     headers: {
       'Authorization': `Bearer ${authToken}`
     }
@@ -121,16 +117,12 @@ function loadBookingsData() {
     bookingsData = testBookingsData;
     loadBranchesData();
   });
-  */
-
-  bookingsData = testBookingsData;
-  loadBranchesData();
+  
 }
 
-// Загрузка данных филиалов
 function loadBranchesData() {
-  /*
-  fetch('http://localhost:8080/api/branches', {
+
+  fetch('http://localhost:8080/branches', {
     headers: {
       'Authorization': `Bearer ${authToken}`
     }
@@ -148,13 +140,31 @@ function loadBranchesData() {
     branchesData = testBranchesData;
     renderBookingsTable();
   });
-  */
 
-  branchesData = testBranchesData;
-  renderBookingsTable();
 }
 
-// Отрисовка информации профиля
+function loadQRCode(id, elementId) {
+
+  fetch(`http://localhost:8080/files/${id}`, {
+    headers: {
+      'Authorization': `Bearer ${authToken}`
+    }
+  })
+  .then(response => {
+    if (!response.ok) throw new Error('Ошибка загрузки QR-кода');
+    return response.blob();
+  })
+  .then(blob => {
+    const url = URL.createObjectURL(blob);
+    document.getElementById(elementId).src = url;
+  })
+  .catch(error => {
+    console.error('Ошибка:', error);
+    document.getElementById(elementId).src = '../pictures/default-qr.svg';
+  });
+
+}
+
 function renderProfileInfo() {
   const profileInfo = document.getElementById('profile-info');
   profileInfo.innerHTML = `
@@ -166,7 +176,6 @@ function renderProfileInfo() {
   `;
 }
 
-// Отрисовка таблицы бронирований
 function renderBookingsTable() {
   const bookingsTable = document.getElementById('bookings-table');
   bookingsTable.innerHTML = `
@@ -189,6 +198,7 @@ function renderBookingsTable() {
           const branchName = branchInfo ? branchInfo.name : 'Неизвестный филиал';
           
           const status = booking.paymentMethod === 'QR_ONLINE' ? 'Оплачено' : 'Необходимо оплатить';
+          const qrId = booking.paymentMethod === 'QR_ONLINE' ? `qr-confirm-${index}` : `qr-pay-${index}`;
           
           return `
             <tr class="booking-row" onclick="toggleBookingDetails(${index})">
@@ -199,13 +209,22 @@ function renderBookingsTable() {
             <tr class="booking-details" id="booking-details-${index}">
               <td colspan="3">
                 <div>
+                  <p><strong>Имя:</strong> ${booking.firstName} ${booking.lastName}</p>
+                  <p><strong>Телефон:</strong> ${booking.phone}</p>
+                  <p><strong>Email:</strong> ${booking.email}</p>
                   <p><strong>Сумма:</strong> ${booking.finalPrice}</p>
                   ${booking.paymentMethod === 'QR_OFFLINE' ? `
-                    <div class="qr-code">QR-код для оплаты</div>
-                    <button class="cancel-btn" onclick="cancelBooking('${booking.id}', event)">Отменить бронь</button>
+                    <div class="qr-container">
+                      <p>QR-код для оплаты:</p>
+                      <img id="qr-pay-${index}" class="qr-code" alt="QR-код для оплаты">
+                    </div>
                   ` : `
-                    <button class="cancel-btn" onclick="cancelBooking('${booking.id}', event)">Отменить бронь</button>
+                    <div class="qr-container">
+                      <p>QR-код подтверждения:</p>
+                      <img id="qr-confirm-${index}" class="qr-code" alt="QR-код подтверждения">
+                    </div>
                   `}
+                  <button class="cancel-btn" onclick="cancelBooking('${booking.id}', event)">Отменить бронь</button>
                 </div>
               </td>
             </tr>
@@ -214,13 +233,20 @@ function renderBookingsTable() {
       </tbody>
     </table>
   `;
+
+  bookingsData.forEach((booking, index) => {
+    if (booking.paymentMethod === 'QR_ONLINE' && booking.qrConfirmationId) {
+      loadQRCode(booking.qrConfirmationId, `qr-confirm-${index}`);
+    } else if (booking.paymentMethod === 'QR_OFFLINE' && booking.qrPaymentId) {
+      loadQRCode(booking.qrPaymentId, `qr-pay-${index}`);
+    }
+  });
 }
 
-// Поиск филиала по ID компьютера
-function findBranchByPcId(pcId) {
-  /*
+async function findBranchByPcId(pcId) {
+
   for (const branch of branchesData) {
-    const response = await fetch(`http://localhost:8080/api/branches/${branch.id}/pcs`, {
+    const response = await fetch(`http://localhost:8080/branches/${branch.id}/pcs`, {
       headers: {
         'Authorization': `Bearer ${authToken}`
       }
@@ -231,24 +257,14 @@ function findBranchByPcId(pcId) {
     }
   }
   return null;
-  */
 
-  // Тестовая реализация
-  for (const branchId in testPcsData) {
-    if (testPcsData[branchId].some(pc => pc.id === pcId)) {
-      return branchesData.find(b => b.id === branchId);
-    }
-  }
-  return null;
 }
 
-// Переключение отображения деталей бронирования
 function toggleBookingDetails(index) {
   const details = document.getElementById(`booking-details-${index}`);
   details.classList.toggle('active');
 }
 
-// Отмена бронирования
 function cancelBooking(bookingId, event) {
   event.stopPropagation();
   
@@ -256,7 +272,6 @@ function cancelBooking(bookingId, event) {
     return;
   }
 
-  /*
   fetch(`http://localhost:8080/api/bookings/${bookingId}/cancel`, {
     method: 'PATCH',
     headers: {
@@ -271,15 +286,12 @@ function cancelBooking(bookingId, event) {
     console.error('Ошибка:', error);
     alert('Не удалось отменить бронирование');
   });
-  */
 
-  // Тестовая реализация
   alert(`Бронирование ${bookingId} отменено (тестовый режим)`);
   bookingsData = bookingsData.filter(b => b.id !== bookingId);
   renderBookingsTable();
 }
 
-// Редактирование профиля
 document.getElementById('edit-profile-btn').addEventListener('click', () => {
   document.getElementById('profile-info').style.display = 'none';
   document.getElementById('edit-profile-form').style.display = 'block';
@@ -305,8 +317,7 @@ document.getElementById('profile-form').addEventListener('submit', (e) => {
     phone: document.getElementById('phone').value
   };
 
-  /*
-  fetch('http://localhost:8080/api/profile', {
+  fetch('http://localhost:8080/profile', {
     method: 'PUT',
     headers: {
       'Authorization': `Bearer ${authToken}`,
@@ -322,16 +333,13 @@ document.getElementById('profile-form').addEventListener('submit', (e) => {
     console.error('Ошибка:', error);
     alert('Не удалось обновить профиль');
   });
-  */
 
-  // Тестовая реализация
   profileData = { ...profileData, ...updatedData };
   document.getElementById('profile-info').style.display = 'block';
   document.getElementById('edit-profile-form').style.display = 'none';
   renderProfileInfo();
 });
 
-// Инициализация при загрузке страницы
 document.addEventListener('DOMContentLoaded', () => {
   loadProfileData();
   loadBookingsData();

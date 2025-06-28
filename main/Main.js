@@ -1,58 +1,48 @@
 let currentSlide = 0;
 let promotions = [];
 
-const testPromotions = [
-  {
-    id: 1,
-    type: "PERCENT",
-    value: 50,
-    description: "Скидка 50% на все курсы! Только до конца месяца",
-    image: "/pictures/promo1.svg"
-  },
-  {
-    id: 2,
-    type: "BONUS",
-    value: 1000,
-    description: "Бонус 1000₽ при регистрации",
-    image: "/pictures/promo2.svg"
-  },
-  {
-    id: 3,
-    type: "GIFT",
-    value: 0,
-    description: "Бесплатный час игры при бронировании от 3 часов",
-    image: "/pictures/promo3.svg"
-  },
-  {
-    id: 4,
-    type: "PERCENT",
-    value: 50,
-    description: "Скидка 50% на все курсы! Только до конца месяца",
-    image: "/pictures/promo1.svg"
-  }
-];
-
 function initSlider() {
-  /*
-  // Реальная функция загрузки акций с сервера
-  fetch('http://localhost:8080/api/promotions')
-    .then(response => response.json())
+  fetch('http://localhost:8080/promotions')
+    .then(response => {
+      if (!response.ok) throw new Error('Ошибка загрузки акций');
+      return response.json();
+    })
     .then(data => {
       promotions = data;
       renderSlides();
       updateSlider();
+
+      promotions.forEach((promo, index) => {
+        if (promo.imageId) {
+          loadPromoImage(promo.imageId, `promo-img-${index}`);
+        }
+      });
     })
     .catch(error => {
-      console.error('Ошибка загрузки акций:', error);
-      promotions = testPromotions;
-      renderSlides();
-      updateSlider();
+      console.error('Ошибка:', error);
+      // В случае ошибки просто не показываем слайдер
+      document.querySelector('.slider').style.display = 'none';
     });
-  */
+}
 
-  promotions = testPromotions;
-  renderSlides();
-  updateSlider();
+function loadPromoImage(imageId, elementId) {
+  fetch(`http://localhost:8080/api/files/${imageId}`, {
+    headers: {
+      'accept': 'image/*'
+    }
+  })
+  .then(response => {
+    if (!response.ok) throw new Error('Ошибка загрузки изображения');
+    return response.blob();
+  })
+  .then(blob => {
+    const url = URL.createObjectURL(blob);
+    document.getElementById(elementId).src = url;
+  })
+  .catch(error => {
+    console.error('Ошибка загрузки изображения:', error);
+    document.getElementById(elementId).src = '/pictures/default-promo.svg';
+  });
 }
 
 function renderSlides() {
@@ -62,15 +52,34 @@ function renderSlides() {
   slideContainer.innerHTML = '';
   dotsContainer.innerHTML = '';
 
+  if (promotions.length === 0) {
+    document.querySelector('.slider').style.display = 'none';
+    return;
+  }
+
   promotions.forEach((promo, index) => {
     const slide = document.createElement('div');
     slide.className = 'slide';
+    
+    const startDate = formatDate(promo.start_date);
+    const endDate = formatDate(promo.end_date);
+    
     slide.innerHTML = `
       <div class="slide-text">
         <h2>${getPromoTitle(promo)}</h2>
         <p>${promo.description}</p>
+        <div class="promo-details">
+          <div class="promo-detail">
+            <span class="detail-label">Платформы:</span>
+            <span class="detail-value">${promo.platformFor || 'Все'}</span>
+          </div>
+          <div class="promo-detail">
+            <span class="detail-label">Действует:</span>
+            <span class="detail-value">${startDate} - ${endDate}</span>
+          </div>
+        </div>
       </div>
-      <img src="${promo.image}" alt="Promo ${promo.id}">
+      <img id="promo-img-${index}" src="/pictures/default-promo.svg" alt="Promo ${promo.id}">
     `;
     slideContainer.appendChild(slide);
 
@@ -81,6 +90,20 @@ function renderSlides() {
       updateSlider();
     });
     dotsContainer.appendChild(dot);
+
+    if (promo.imageId) {
+      loadPromoImage(promo.imageId, `promo-img-${index}`);
+    }
+  });
+}
+
+function formatDate(dateString) {
+  if (!dateString) return 'не указано';
+  const date = new Date(dateString);
+  return date.toLocaleDateString('ru-RU', {
+    day: '2-digit',
+    month: '2-digit',
+    year: 'numeric'
   });
 }
 
@@ -88,10 +111,8 @@ function getPromoTitle(promo) {
   switch(promo.type) {
     case 'PERCENT':
       return `Скидка ${promo.value}%`;
-    case 'BONUS':
+    case 'FIXED_AMOUNT':
       return `Бонус ${promo.value}₽`;
-    case 'GIFT':
-      return 'Специальное предложение';
     default:
       return 'Акция';
   }
@@ -111,29 +132,38 @@ function updateSlider() {
 }
 
 document.querySelector('.arrow.left').addEventListener('click', () => {
-  currentSlide = (currentSlide - 1 + promotions.length) % promotions.length;
-  updateSlider();
+  if (promotions.length > 0) {
+    currentSlide = (currentSlide - 1 + promotions.length) % promotions.length;
+    updateSlider();
+  }
 });
 
 document.querySelector('.arrow.right').addEventListener('click', () => {
-  currentSlide = (currentSlide + 1) % promotions.length;
-  updateSlider();
+  if (promotions.length > 0) {
+    currentSlide = (currentSlide + 1) % promotions.length;
+    updateSlider();
+  }
 });
 
-let slideInterval = setInterval(() => {
-  currentSlide = (currentSlide + 1) % promotions.length;
-  updateSlider();
-}, 5000);
+let slideInterval;
+if (promotions.length > 0) {
+  slideInterval = setInterval(() => {
+    currentSlide = (currentSlide + 1) % promotions.length;
+    updateSlider();
+  }, 5000);
+}
 
 document.querySelector('.slider').addEventListener('mouseenter', () => {
   clearInterval(slideInterval);
 });
 
 document.querySelector('.slider').addEventListener('mouseleave', () => {
-  slideInterval = setInterval(() => {
-    currentSlide = (currentSlide + 1) % promotions.length;
-    updateSlider();
-  }, 5000);
+  if (promotions.length > 0) {
+    slideInterval = setInterval(() => {
+      currentSlide = (currentSlide + 1) % promotions.length;
+      updateSlider();
+    }, 5000);
+  }
 });
 
 document.addEventListener('DOMContentLoaded', initSlider);

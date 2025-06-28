@@ -13,7 +13,7 @@ document.addEventListener('DOMContentLoaded', function() {
       password: password
     };
     
-    fetch('http://localhost:8080/api/auth/login', {
+    fetch('http://localhost:8080/auth/login', {
       method: 'POST',
       headers: {
         'accept': 'application/json',
@@ -36,7 +36,7 @@ document.addEventListener('DOMContentLoaded', function() {
         localStorage.removeItem('rememberedUsername');
       }
       
-      window.location.href = '/main';
+      window.location.href = '/main/Main.html';
     })
     .catch(error => {
       console.error('Ошибка:', error);

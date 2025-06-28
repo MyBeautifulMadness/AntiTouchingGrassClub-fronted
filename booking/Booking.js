@@ -6,12 +6,21 @@ const pcDetails = document.getElementById('pc-details');
 let currentBranchId = null;
 let selectedPcId = null;
 let testComputers = [];
+let authToken = localStorage.getItem('authToken');
 
-/*
-// Реальная функция загрузки филиалов с сервера
+
+if (!authToken) {
+  window.location.href = '/login/Login.html';
+  alert("токена нет");
+}
+
 async function loadBranches() {
   try {
-    const response = await fetch('http://localhost:8080/api/branches');
+    const response = await fetch('http://localhost:8080/branches', {
+      headers: {
+        'Authorization': `Bearer ${authToken}`
+      }
+    });
     if (!response.ok) throw new Error('Ошибка загрузки филиалов');
     
     const branches = await response.json();
@@ -42,34 +51,7 @@ async function loadBranches() {
     branchOptions.innerHTML = '<div class="branch-option">Нет доступных филиалов</div>';
   }
 }
-*/
 
-const testBranches = [
-  { id: 1, name: "Филиал Центральный" },
-  { id: 2, name: "Филиал Северный" },
-  { id: 3, name: "Филиал Западный" }
-];
-
-function initBranches() {
-  testBranches.forEach(branch => {
-    const option = document.createElement('div');
-    option.className = 'branch-option';
-    option.textContent = branch.name;
-    option.onclick = () => {
-      selectedBranch.querySelector('span').textContent = branch.name;
-      branchSelector.classList.remove('active');
-      currentBranchId = branch.id;
-      loadBranchMap();
-    };
-    branchOptions.appendChild(option);
-  });
-
-  if (testBranches.length > 0) {
-    selectedBranch.querySelector('span').textContent = testBranches[0].name;
-    currentBranchId = testBranches[0].id;
-    loadBranchMap();
-  }
-}
 
 
 selectedBranch.onclick = () => {
@@ -83,10 +65,9 @@ document.addEventListener('click', (e) => {
 });
 
 
-function loadBranchMap() {
-  /*
-  // Реальная функция загрузки компьютеров с сервера
-  fetch(`http://localhost:8080/api/branches/${currentBranchId}/pcs`)
+function loadBranchMap(currentBranchId) {
+
+  fetch(`http://localhost:8080/branches/${currentBranchId}/pcs`)
     .then(res => res.json())
     .then(data => {
       testComputers = data;
@@ -101,33 +82,6 @@ function loadBranchMap() {
       })));
     })
     .catch(console.error);
-  */
-
-  testComputers = currentBranchId === 1 ? [
-    { id: 'pc1', positionY: 0, positionX: 0, status: 'FREE', priceLevel: 'STANDARD', number: 1, time: '' },
-    { id: 'pc2', positionY: 0, positionX: 1, status: 'FREE', priceLevel: 'EXTRA', number: 2, time: '' },
-    { id: 'pc3', positionY: 1, positionX: 0, status: 'BUSY', priceLevel: 'STANDARD', number: 3, time: '16:00' },
-    { id: 'pc4', positionY: 1, positionX: 1, status: 'BOOKED', priceLevel: 'VIP', number: 4, time: '14:00-16:00' }
-  ] : currentBranchId === 2 ? [
-    { id: 'pc5', positionY: 0, positionX: 0, status: 'FREE', priceLevel: 'VIP', number: 1, time: '' },
-    { id: 'pc6', positionY: 0, positionX: 1, status: 'BOOKED', priceLevel: 'EXTRA', number: 2, time: '12:00-14:00' },
-    { id: 'pc7', positionY: 1, positionX: 0, status: 'FREE', priceLevel: 'STANDARD', number: 3, time: '' }
-  ] : [
-    { id: 'pc8', positionY: 0, positionX: 0, status: 'BUSY', priceLevel: 'EXTRA', number: 1, time: '' },
-    { id: 'pc9', positionY: 0, positionX: 1, status: 'FREE', priceLevel: 'STANDARD', number: 2, time: '' },
-    { id: 'pc10', positionY: 1, positionX: 0, status: 'BOOKED', priceLevel: 'VIP', number: 3, time: '16:00-18:00' },
-    { id: 'pc11', positionY: 1, positionX: 1, status: 'FREE', priceLevel: 'EXTRA', number: 4, time: '' }
-  ];
-
-  renderGrid(testComputers.map(c => ({
-    id: c.id,
-    row: c.positionY,
-    col: c.positionX,
-    status: c.status === 'FREE' ? 'available' : c.status.toLowerCase(),
-    price: c.priceLevel === 'STANDARD' ? 100 : c.priceLevel === 'EXTRA' ? 150 : c.priceLevel === 'VIP' ? 200 : 100,
-    number: c.number,
-    time: c.time || ''
-  })));
 }
 
 function renderGrid(cells) {
@@ -177,9 +131,8 @@ function handlePcClick(pcId) {
 }
 
 function loadPcDetails(pcId) {
-  /*
-  // Реальная функция загрузки данных ПК с сервера
-  fetch(`http://localhost:8080/api/pcs/${pcId}`)
+
+  fetch(`http://localhost:8080/pcs/${pcId}`)
     .then(res => res.json())
     .then(data => {
       const pcData = testComputers.find(pc => pc.id === pcId) || {};
@@ -190,7 +143,6 @@ function loadPcDetails(pcId) {
       });
     })
     .catch(console.error);
-  */
 
   const pcData = testComputers.find(pc => pc.id === pcId) || {};
   
@@ -281,4 +233,4 @@ function renderPcDetails(details) {
   }
 }
 
-initBranches();
+loadBranches();

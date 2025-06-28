@@ -20,6 +20,25 @@ header {
   align-items: center;
   padding: 20px 40px;
   background: linear-gradient(to bottom, #111, #000);
+  flex-wrap: wrap;
+}
+
+.login-btn {
+  padding: 8px 20px;
+  background: transparent;
+  color: #00ff66;
+  border: 2px solid #00ff66;
+  border-radius: 20px;
+  font-weight: bold;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  margin-left: auto;
+  white-space: nowrap;
+}
+
+.login-btn:hover {
+  background: #00ff66;
+  color: #000;
 }
 
 .logo {
@@ -87,6 +106,34 @@ header {
   font-size: 1.4rem;
   margin-left: 60px;
   line-height: 1.5;
+}
+
+.promo-details {
+  margin-top: 20px;
+  background: rgba(0, 0, 0, 0.3);
+  padding: 12px;
+  border-radius: 8px;
+  font-size: 1rem;
+}
+
+.promo-detail {
+  display: flex;
+  margin-bottom: 8px;
+}
+
+.promo-detail:last-child {
+  margin-bottom: 0;
+}
+
+.detail-label {
+  font-weight: bold;
+  color: #00ff66;
+  margin-right: 8px;
+  min-width: 100px;
+}
+
+.detail-value {
+  color: #fff;
 }
 
 .arrow {
@@ -201,4 +248,22 @@ footer {
 .footer-center p {
   font-size: 0.8rem;
   color: #ccc;
+}
+
+@media (max-width: 768px) {
+  header {
+    gap: 15px;
+    padding: 15px 20px;
+  }
+  
+  .nav {
+    order: 3;
+    width: 100%;
+    justify-content: center;
+    margin-top: 10px;
+  }
+  
+  .login-btn {
+    margin-left: 0;
+  }
 }

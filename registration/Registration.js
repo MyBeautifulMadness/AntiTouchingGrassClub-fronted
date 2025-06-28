@@ -43,7 +43,7 @@ document.addEventListener('DOMContentLoaded', function() {
     submitButton.textContent = 'Регистрация...';
     submitButton.disabled = true;
     
-    fetch('http://localhost:8080/api/auth/register', {
+    fetch('http://localhost:8080/auth/register', {
       method: 'POST',
       headers: {
         'accept': '*/*',
@@ -52,9 +52,9 @@ document.addEventListener('DOMContentLoaded', function() {
       body: JSON.stringify(registrationData)
     })
     .then(response => {
-      if (response.status === 201) {
+      if (response.status === 200) {
         alert('Регистрация успешна! Теперь вы можете войти в систему.');
-        window.location.href = '/login';
+        window.location.href = '/login/Login.html';
       } else if (response.status === 401) {
         throw new Error('Ошибка регистрации: такой пользователь уже существует');
       } else {

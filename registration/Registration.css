@@ -13,11 +13,24 @@ body {
   flex-direction: column;
 }
 
-.header {
-  padding: 30px 50px;
-  position: absolute;
-  top: 0;
-  left: 0;
+header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 20px 40px;
+  background: linear-gradient(to bottom, #111, #000);
+  flex-wrap: wrap;
+}
+
+.nav a {
+  margin-left: 30px;
+  color: #fff;
+  text-decoration: none;
+  font-weight: bold;
+}
+
+.nav a:hover {
+  color: #00ff66;
 }
 
 .logo {

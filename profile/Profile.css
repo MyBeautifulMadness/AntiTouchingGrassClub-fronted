@@ -63,7 +63,6 @@ header {
   border-radius: 20px;
   font-weight: bold;
   cursor: pointer;
-  transition: background 0.2s;
 }
 
 #edit-profile-btn:hover {
@@ -190,16 +189,24 @@ header {
   font-weight: bold;
 }
 
+.qr-container {
+  margin: 15px 0;
+  text-align: center;
+}
+
+.qr-container p {
+  margin-bottom: 8px;
+  font-weight: bold;
+}
+
 .qr-code {
-  margin-top: 10px;
-  padding: 10px;
-  background: white;
   width: 150px;
   height: 150px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: black;
+  background: white;
+  padding: 10px;
+  border-radius: 8px;
+  margin: 0 auto;
+  display: block;
 }
 
 footer {
