@@ -32,15 +32,6 @@ header {
   height: 50px;
 }
 
-.logo h1 {
-  font-size: 1.2rem;
-  line-height: 1.2;
-}
-
-.logo .green {
-  color: #00ff66;
-}
-
 .nav a {
   margin-left: 30px;
   color: #fff;
@@ -54,7 +45,6 @@ header {
 
 .slider {
   position: relative;
-  background: transparent;
   margin: 30px auto;
   border-radius: 15px;
   overflow: hidden;
@@ -68,7 +58,6 @@ header {
 
 .slide-container {
   display: flex;
-  transition: transform 0.5s ease-in-out;
   width: 100%;
 }
 
@@ -82,7 +71,6 @@ header {
 .slide.active {
   display: flex;
 }
-
 
 .slide img {
   width: 400px;
@@ -122,18 +110,6 @@ header {
   right: 15px;
 }
 
-@media (min-width: 768px) {
-  .slide {
-    flex-direction: row;
-    text-align: left;
-  }
-
-  .slide-text h2,
-  .slide-text p {
-    margin-left: 50px;
-  }
-}
-
 .dots {
   position: absolute;
   bottom: 15px;
@@ -149,6 +125,7 @@ header {
   border-radius: 50%;
   display: inline-block;
   transition: background-color 0.3s;
+  cursor: pointer;
 }
 
 .dot.active {
@@ -177,7 +154,6 @@ header {
   box-shadow: 0 0 14px rgba(0, 255, 102, 0.25);
   transition: transform 0.2s ease, box-shadow 0.2s ease;
 }
-
 
 .offer:hover {
   transform: translateY(-4px);
@@ -225,10 +201,4 @@ footer {
 .footer-center p {
   font-size: 0.8rem;
   color: #ccc;
-}
-
-.container {
-  max-width: 1400px;
-  margin: 0 auto;
-  padding: 0 20px;
 }
