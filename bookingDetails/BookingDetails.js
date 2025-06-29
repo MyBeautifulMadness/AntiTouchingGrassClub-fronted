@@ -1,5 +1,4 @@
 document.addEventListener('DOMContentLoaded', function() {
-
     const authToken = localStorage.getItem('authToken');
     if (!authToken) {
         window.location.href = '/login/Login.html';
@@ -72,18 +71,6 @@ document.addEventListener('DOMContentLoaded', function() {
     });
     
     
-    function initTimeSlider() {
-        const sliderTicks = document.getElementById('slider-ticks');
-        sliderTicks.innerHTML = '';
-        
-        for (let i = 10; i <= 22; i++) {
-            const tick = document.createElement('div');
-            tick.className = 'slider-tick';
-            tick.dataset.hour = `${i}:00`;
-            sliderTicks.appendChild(tick);
-        }
-    }
-    
     function checkDateAvailability() {
         const date = dateInput.value;
         if (!date) {
@@ -92,6 +79,9 @@ document.addEventListener('DOMContentLoaded', function() {
         }
         
         selectedDate = date;
+        
+        // Показываем индикатор загрузки
+        availableSlots.innerHTML = '<div class="loading-slot">Загрузка доступных слотов...</div>';
         
         fetch(`http://5.129.207.193:8080/bookings/${pcId}/bookings-by-day?date=${date}`, {
             headers: {
@@ -113,11 +103,11 @@ document.addEventListener('DOMContentLoaded', function() {
 
     function renderAvailableSlots() {
         availableSlots.innerHTML = '';
-        startTimeSelect.innerHTML = '';
-        endTimeSelect.innerHTML = '';
+        startTimeSelect.innerHTML = '<option value="">Выберите время начала</option>';
+        endTimeSelect.innerHTML = '<option value="">Выберите время окончания</option>';
         
         const allSlots = [];
-        for (let hour = 10; hour <= 22; hour++) {
+        for (let hour = 0; hour <= 24; hour++) {
             const time = `${hour.toString().padStart(2, '0')}:00`;
             allSlots.push({
                 time: time,
@@ -147,10 +137,11 @@ document.addEventListener('DOMContentLoaded', function() {
         });
         
         startTimeSelect.addEventListener('change', updateEndTimeOptions);
-        timeSlider.addEventListener('input', updateEndTimeBySlider);
     }
 
     function isTimeBooked(hour) {
+        if (hour === 24) hour = 23; // Для проверки 24:00 используем 23:00
+        
         const slotStart = new Date(`${selectedDate}T${hour.toString().padStart(2, '0')}:00:00`);
         const slotEnd = new Date(`${selectedDate}T${(hour + 1).toString().padStart(2, '0')}:00:00`);
         
@@ -159,8 +150,8 @@ document.addEventListener('DOMContentLoaded', function() {
             const bookingEnd = new Date(booking.end_date);
             
             return (slotStart >= bookingStart && slotStart < bookingEnd) || 
-                (slotEnd > bookingStart && slotEnd <= bookingEnd) ||
-                (slotStart <= bookingStart && slotEnd >= bookingEnd);
+                   (slotEnd > bookingStart && slotEnd <= bookingEnd) ||
+                   (slotStart <= bookingStart && slotEnd >= bookingEnd);
         });
     }
     
@@ -176,16 +167,33 @@ document.addEventListener('DOMContentLoaded', function() {
         updateEndTimeOptions();
     }
     
+   function updateSliderVisuals(startHour, maxHours) {
+        // Обновляем градиент слайдера
+        const percentage = (timeSlider.value / timeSlider.max) * 100;
+        timeSlider.style.setProperty('--background-size', `${percentage}%`);
+    }
+
+    function initTimeSlider() {
+        timeSlider.min = 0;
+        timeSlider.max = 24;
+        timeSlider.value = 0;
+        timeSlider.disabled = true;
+        
+        timeSlider.addEventListener('input', updateEndTimeBySlider);
+    }
+
     function updateEndTimeOptions() {
         const startHour = parseInt(startTimeSelect.value);
-        if (isNaN(startHour)) return;
+        if (isNaN(startHour)) {
+            timeSlider.disabled = true;
+            confirmTimeBtn.disabled = true;
+            return;
+        }
         
-        endTimeSelect.innerHTML = '';
-        timeSlider.disabled = false;
-        timeSlider.min = 1;
+        endTimeSelect.innerHTML = '<option value="">Выберите время окончания</option>';
         
-        const maxEndHour = Math.min(22, startHour + 6);
-        let maxAvailableHours = 1;
+        const maxEndHour = 24;
+        let maxAvailableHours = 0;
         
         for (let hour = startHour + 1; hour <= maxEndHour; hour++) {
             if (isTimeBooked(hour)) break;
@@ -199,11 +207,13 @@ document.addEventListener('DOMContentLoaded', function() {
             maxAvailableHours = hour - startHour;
         }
         
+        timeSlider.min = 1;
         timeSlider.max = maxAvailableHours;
         timeSlider.value = 1;
-        updateEndTimeBySlider();
+        timeSlider.disabled = maxAvailableHours === 0;
         
-        confirmTimeBtn.disabled = false;
+        updateEndTimeBySlider();
+        confirmTimeBtn.disabled = maxAvailableHours === 0;
     }
     
     function updateEndTimeBySlider() {
@@ -213,7 +223,13 @@ document.addEventListener('DOMContentLoaded', function() {
         const hoursToAdd = parseInt(timeSlider.value);
         const endHour = startHour + hoursToAdd;
         
+        // Убедимся, что выбранное время доступно
+        if (endHour > 24 || isTimeBooked(endHour)) {
+            return;
+        }
+        
         endTimeSelect.value = endHour;
+        updateSliderVisuals(startHour, timeSlider.max);
     }
     
     function confirmTimeSelection() {
@@ -222,6 +238,11 @@ document.addEventListener('DOMContentLoaded', function() {
         
         if (isNaN(selectedStartTime) || isNaN(selectedEndTime)) {
             alert('Пожалуйста, выберите время');
+            return;
+        }
+        
+        if (selectedEndTime <= selectedStartTime) {
+            alert('Время окончания должно быть позже времени начала');
             return;
         }
         
@@ -368,22 +389,19 @@ document.addEventListener('DOMContentLoaded', function() {
     }
     
     function finalConfirmBooking() {
-
         fetch('http://5.129.207.193:8080/auth/profile', {
             headers: {
                 'Authorization': `Bearer ${authToken}`
             }
         })
         .then(response => response.json())
-        .then(data => {
-            createBooking(data);
+        .then(profile => {
+            createBooking(profile);
         })
         .catch(error => {
             console.error('Error:', error);
             alert('Ошибка при загрузке профиля');
         });
-        
-        createBooking(data);
     }
     
     function createBooking(profile) {
@@ -420,17 +438,20 @@ document.addEventListener('DOMContentLoaded', function() {
             },
             body: JSON.stringify(bookingData)
         })
-        .then(response => response.json())
+        .then(response => {
+            if (!response.ok) {
+                throw new Error('Ошибка сервера');
+            }
+            return response.json();
+        })
         .then(data => {
             alert('Бронирование успешно создано!');
             window.location.href = '../profile/Profile.html';
         })
         .catch(error => {
             console.error('Error:', error);
-            alert('Ошибка при создании бронирования');
+            alert('Ошибка при создании бронирования: ' + error.message);
         });
-
-        alert('Booking data:', bookingData);
     }
     
     function formatDate(dateString) {

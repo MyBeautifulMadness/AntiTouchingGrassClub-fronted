@@ -115,119 +115,211 @@ header {
     font-size: 16px;
 }
 
-.time-slots-container {
+.time-slider-container {
+    width: 100%;
+    margin: 40px 0;
+    position: relative;
+}
+
+.time-slider-wrapper {
+    padding: 0;
+    position: relative;
+    height: 30px;
     display: flex;
-    flex-direction: column;
-    gap: 20px;
+    align-items: center;
+}
+
+#time-slider {
+    width: 100%;
+    height: 8px;
+    -webkit-appearance: none;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 4px;
+    outline: none;
+    margin: -12px 0 0 0;
+    position: relative;
+    z-index: 2;
+}
+
+#time-slider::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    width: 24px;
+    height: 24px;
+    background: #00ff66;
+    border-radius: 50%;
+    cursor: pointer;
+    border: 3px solid #fff;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.3);
+    transition: all 0.2s;
+    position: relative;
+    margin-top: 0;
+    margin-bottom: 0;
+    transform: none;
+}
+
+#time-slider::-webkit-slider-thumb:hover {
+    transform: scale(1.1);
+    background: #00cc55;
+}
+
+#time-slider::-webkit-slider-runnable-track {
+    height: 8px;
+    background: linear-gradient(to right, #00ff66, #00ff66) no-repeat;
+    background-size: var(--background-size, 0%) 100%;
+    border-radius: 4px;
+}
+
+
+#time-slider::-moz-range-thumb {
+    width: 24px;
+    height: 24px;
+    background: #00ff66;
+    border-radius: 50%;
+    cursor: pointer;
+    border: 3px solid #fff;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.3);
+    transition: all 0.2s;
+    position: relative;
+}
+
+#time-slider::-moz-range-thumb:hover {
+    transform: scale(1.1);
+    background: #00cc55;
+}
+
+#time-slider::-moz-range-track {
+    height: 8px;
+    background: linear-gradient(to right, #00ff66, #00ff66) no-repeat;
+    background-size: var(--background-size, 0%) 100%;
+    border-radius: 4px;
+}
+
+#slider-ticks {
+    display: none;
+}
+
+.slider-tick {
+    position: relative;
+    text-align: center;
+    font-size: 12px;
+    color: rgba(255, 255, 255, 0.6);
+    transform: translateX(-50%);
+    display: none;
+}
+
+.slider-tick.active {
+    display: block;
+    color: #fff;
+}
+
+.slider-tick.selected {
+    color: #00ff66;
+    font-weight: bold;
+}
+
+.slider-tick::before {
+    content: '';
+    position: absolute;
+    top: -15px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 2px;
+    height: 10px;
+    background: rgba(255, 255, 255, 0.3);
+}
+
+.slider-tick.active::before {
+    background: #00ff66;
+}
+
+.time-range-inputs {
+    display: flex;
+    justify-content: space-between;
     margin: 20px 0;
+}
+
+.time-input {
+    flex: 1;
+    margin: 0 10px;
+}
+
+.time-input label {
+    display: block;
+    margin-bottom: 8px;
+    color: #ccc;
+    font-size: 14px;
+}
+
+.time-input select {
+    width: 100%;
+    padding: 12px 15px;
+    background: rgba(255, 255, 255, 0.1);
+    border: 1px solid #00ff66;
+    border-radius: 8px;
+    color: #fff;
+    font-size: 16px;
+    appearance: none;
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%2300ff66'%3e%3cpath d='M7 10l5 5 5-5z'/%3e%3c/svg%3e");
+    background-repeat: no-repeat;
+    background-position: right 15px center;
+    background-size: 12px;
+    cursor: pointer;
+}
+
+.time-input select:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
 }
 
 .available-slots {
     display: flex;
     flex-wrap: wrap;
-    gap: 10px;
-    justify-content: center;
+    gap: 8px;
+    margin: 20px 0;
 }
 
 .time-slot {
     padding: 10px 15px;
-    background: #333;
+    background: rgba(0, 255, 102, 0.1);
+    border: 1px solid rgba(0, 255, 102, 0.3);
     border-radius: 20px;
+    color: #00ff66;
+    font-size: 14px;
     cursor: pointer;
     transition: all 0.3s;
 }
 
 .time-slot:hover {
-    background: #00ff66;
-    color: #000;
+    background: rgba(0, 255, 102, 0.2);
+    border-color: #00ff66;
 }
 
 .time-slot.selected {
     background: #00ff66;
     color: #000;
     font-weight: bold;
+    border-color: #00ff66;
 }
 
 .time-slot.booked {
-    background: #f39c12;
-    color: #000;
+    background: rgba(243, 156, 18, 0.1);
+    border-color: rgba(243, 156, 18, 0.3);
+    color: #f39c12;
     cursor: not-allowed;
 }
 
-.time-range-selector {
-    background: rgba(255, 255, 255, 0.1);
-    padding: 20px;
-    border-radius: 12px;
+@keyframes pulse {
+    0% { opacity: 0.5; }
+    50% { opacity: 1; }
+    100% { opacity: 0.5; }
 }
 
-.time-range-inputs {
-    display: flex;
-    justify-content: space-around;
-    margin-bottom: 20px;
-}
-
-.time-input {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-}
-
-.time-input label {
-    margin-bottom: 10px;
-    color: #ccc;
-}
-
-.time-input select {
-    padding: 8px 12px;
-    background: rgba(255, 255, 255, 0.1);
-    border: 1px solid #00ff66;
-    border-radius: 8px;
-    color: #fff;
-}
-
-.time-slider-container {
-    margin-top: 20px;
-}
-
-.time-slider {
-    width: 100%;
-    height: 10px;
-    -webkit-appearance: none;
-    background: #333;
-    border-radius: 5px;
-    outline: none;
-}
-
-.time-slider::-webkit-slider-thumb {
-    -webkit-appearance: none;
-    width: 20px;
-    height: 20px;
-    background: #00ff66;
-    border-radius: 50%;
-    cursor: pointer;
-}
-
-.slider-ticks {
-    display: flex;
-    justify-content: space-between;
-    margin-top: 10px;
-}
-
-.slider-tick {
-    width: 2px;
-    height: 10px;
-    background: #00ff66;
-    position: relative;
-}
-
-.slider-tick::after {
-    content: attr(data-hour);
-    position: absolute;
-    top: 15px;
-    left: 50%;
-    transform: translateX(-50%);
-    font-size: 12px;
-    color: #ccc;
+.loading-slot {
+    animation: pulse 1.5s infinite;
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px dashed rgba(255, 255, 255, 0.1);
 }
 
 .promotions-list {
@@ -380,4 +472,26 @@ footer {
     display: flex;
     justify-content: center;
     margin-top: 30px;
+}
+
+@media (max-width: 768px) {
+    /* На мобильных показываем только каждые 4 часа */
+    .slider-tick:nth-child(2n+1) {
+        display: none;
+    }
+    .slider-tick:nth-child(4n+1) {
+        display: block;
+    }
+    
+    .slider-tick::after {
+        font-size: 10px;
+    }
+    
+    .time-range-inputs {
+        flex-direction: column;
+    }
+    
+    .time-input {
+        margin: 10px 0;
+    }
 }
