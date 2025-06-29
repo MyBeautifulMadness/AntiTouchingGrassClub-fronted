@@ -1,6 +1,20 @@
 let currentSlide = 0;
 let promotions = [];
 
+function checkAuth() {
+  const authToken = localStorage.getItem('authToken');
+  const profileLink = document.getElementById('profile-link');
+  const loginBtn = document.getElementById('login-btn');
+
+  if (authToken) {
+    profileLink.style.display = 'block';
+    loginBtn.style.display = 'none';
+  } else {
+    profileLink.style.display = 'none';
+    loginBtn.style.display = 'block';
+  }
+}
+
 function initSlider() {
   fetch('http://5.129.207.193:8080/promotions')
     .then(response => {
@@ -165,4 +179,7 @@ document.querySelector('.slider').addEventListener('mouseleave', () => {
   }
 });
 
-document.addEventListener('DOMContentLoaded', initSlider);
+document.addEventListener('DOMContentLoaded', function() {
+  checkAuth();
+  initSlider();
+});

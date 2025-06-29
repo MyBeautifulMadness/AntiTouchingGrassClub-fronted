@@ -80,7 +80,6 @@ document.addEventListener('DOMContentLoaded', function() {
         
         selectedDate = date;
         
-        // Показываем индикатор загрузки
         availableSlots.innerHTML = '<div class="loading-slot">Загрузка доступных слотов...</div>';
         
         fetch(`http://5.129.207.193:8080/bookings/${pcId}/bookings-by-day?date=${date}`, {
@@ -140,7 +139,7 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     function isTimeBooked(hour) {
-        if (hour === 24) hour = 23; // Для проверки 24:00 используем 23:00
+        if (hour === 24) hour = 23;
         
         const slotStart = new Date(`${selectedDate}T${hour.toString().padStart(2, '0')}:00:00`);
         const slotEnd = new Date(`${selectedDate}T${(hour + 1).toString().padStart(2, '0')}:00:00`);
@@ -168,7 +167,6 @@ document.addEventListener('DOMContentLoaded', function() {
     }
     
    function updateSliderVisuals(startHour, maxHours) {
-        // Обновляем градиент слайдера
         const percentage = (timeSlider.value / timeSlider.max) * 100;
         timeSlider.style.setProperty('--background-size', `${percentage}%`);
     }
@@ -223,7 +221,6 @@ document.addEventListener('DOMContentLoaded', function() {
         const hoursToAdd = parseInt(timeSlider.value);
         const endHour = startHour + hoursToAdd;
         
-        // Убедимся, что выбранное время доступно
         if (endHour > 24 || isTimeBooked(endHour)) {
             return;
         }

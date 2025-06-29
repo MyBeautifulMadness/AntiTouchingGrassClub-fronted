@@ -62,13 +62,26 @@ header {
   color: #00ff66;
 }
 
+.nav-link {
+  margin-left: 30px;
+  color: #fff;
+  text-decoration: none;
+  font-weight: bold;
+  white-space: nowrap;
+}
+
+.nav-link:hover {
+  color: #00ff66;
+}
+
+
 .slider {
   position: relative;
   margin: 30px auto;
   border-radius: 15px;
   overflow: hidden;
   width: 90%;
-  max-width: 1400px; /* Такая же ширина как у offers */
+  max-width: 1400px;
   padding: 30px 0;
   background: rgba(20, 20, 20, 0.5);
   box-shadow: 0 0 15px rgba(0, 255, 102, 0.1);
@@ -117,7 +130,6 @@ header {
 
 .promo-details {
   margin-top: 20px;
-  background: rgba(0, 40, 0, 0.2);
   padding: 15px;
   border-radius: 8px;
   border: 1px solid rgba(0, 255, 102, 0.1);
@@ -295,7 +307,7 @@ footer {
 }
 
 @media (max-width: 768px) {
-  header {
+   header {
     gap: 15px;
     padding: 15px 20px;
   }
@@ -303,11 +315,18 @@ footer {
   .nav {
     order: 3;
     width: 100%;
+    display: flex;
     justify-content: center;
     margin-top: 10px;
+    flex-wrap: wrap;
+  }
+  
+  .nav a, .nav-link {
+    margin: 5px 15px;
   }
   
   .login-btn {
     margin-left: 0;
+    order: 2;
   }
 }

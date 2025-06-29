@@ -101,12 +101,10 @@ function renderGrid(branchId, width, height) {
       if (pc) {
         div.className = 'computer-cell';
         
-        // Определяем основной класс статуса
         let statusClass = '';
         switch(pc.status) {
           case 'AVAILABLE':
-            statusClass = 'lDefault'; // Базовый класс для свободных
-            // Добавляем класс цены только для доступных ПК
+            statusClass = 'lDefault';
             if (pc.priceLevel) {
               div.classList.add(`l${pc.priceLevel}`);
             }
