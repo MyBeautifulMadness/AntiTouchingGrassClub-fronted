@@ -6,6 +6,11 @@ document.addEventListener('DOMContentLoaded', function() {
         return;
     }
 
+    document.getElementById('logout-link').addEventListener('click', function (event) {
+        event.preventDefault();
+        localStorage.clear();
+        window.location.href = '../login/Login.html'; 
+    });
     const urlParams = new URLSearchParams(window.location.search);
     const pcId = urlParams.get('pcId');
     const pcPrice = parseInt(urlParams.get('price')) || 100;

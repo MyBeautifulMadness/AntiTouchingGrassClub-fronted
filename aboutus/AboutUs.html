@@ -179,6 +179,7 @@
     <a href="/main/Main.html">Главная</a>
     <a href="/booking/Booking.html">Бронирование</a>
     <a href="/profile/Profile.html">Личный кабинет</a>
+    <a href="#" id="logout-link">Выйти</a>
   </nav>
 </header>
 
@@ -240,6 +241,10 @@
       <p>© 2024 AntiTouching Grass Club. All rights reserved.</p>
     </div>
   </footer>
-
+  <script>document.getElementById('logout-link').addEventListener('click', function (event) {
+    event.preventDefault();
+    localStorage.clear();
+    window.location.href = '../login/Login.html'; 
+  });</script>
 </body>
 </html>

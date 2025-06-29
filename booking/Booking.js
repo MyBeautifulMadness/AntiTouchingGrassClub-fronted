@@ -8,6 +8,12 @@ let selectedPcId = null;
 let computers = [];
 let authToken = localStorage.getItem('authToken');
 
+document.getElementById('logout-link').addEventListener('click', function (event) {
+  event.preventDefault();
+  localStorage.clear();
+  window.location.href = '../login/Login.html'; 
+});
+
 if (!authToken) {
   window.location.href = '/login/Login.html';
   alert("Токен авторизации отсутствует");

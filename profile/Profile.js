@@ -7,6 +7,12 @@ if (!authToken) {
   window.location.href = '/login/Login.html';
 }
 
+document.getElementById('logout-link').addEventListener('click', function (event) {
+  event.preventDefault();
+  localStorage.clear();
+  window.location.href = '../login/Login.html'; 
+});
+
 async function loadProfileData() {
   try {
     const response = await fetch('http://5.129.207.193:8080/auth/profile', {
