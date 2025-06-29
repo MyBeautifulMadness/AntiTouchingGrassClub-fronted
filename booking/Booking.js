@@ -116,10 +116,10 @@ function renderGrid(branchId, width, height) {
             }
             break;
           case 'OCCUPIED':
-            statusClass = 'lBusy';
+            statusClass = 'lBooked';
             break;
           case 'OUT_OF_SERVICE':
-            statusClass = 'lEmpty';
+            statusClass = 'lBusy';
             break;
           default:
             statusClass = 'lDefault';
