@@ -1,5 +1,5 @@
 document.addEventListener('DOMContentLoaded', function() {
-    
+
     const authToken = localStorage.getItem('authToken');
     if (!authToken) {
         window.location.href = '/login/Login.html';
@@ -17,7 +17,6 @@ document.addEventListener('DOMContentLoaded', function() {
         return;
     }
 
-    // Элементы DOM
     const stepDate = document.getElementById('step-date');
     const stepTime = document.getElementById('step-time');
     const stepPromo = document.getElementById('step-promo');
@@ -40,14 +39,12 @@ document.addEventListener('DOMContentLoaded', function() {
     const discountValueEl = document.getElementById('discount-value');
     const finalPriceEl = document.getElementById('final-price');
     
-    // Установка минимальной даты (сегодня)
     const today = new Date();
     const dd = String(today.getDate()).padStart(2, '0');
     const mm = String(today.getMonth() + 1).padStart(2, '0');
     const yyyy = today.getFullYear();
     dateInput.min = `${yyyy}-${mm}-${dd}`;
     
-    // Переменные состояния
     let selectedDate = null;
     let selectedStartTime = null;
     let selectedEndTime = null;
@@ -56,17 +53,14 @@ document.addEventListener('DOMContentLoaded', function() {
     let bookings = [];
     let promotions = [];
     
-    // Инициализация слайдера времени
     initTimeSlider();
     
-    // Обработчики событий
     checkDateBtn.addEventListener('click', checkDateAvailability);
     confirmTimeBtn.addEventListener('click', confirmTimeSelection);
     confirmPromoBtn.addEventListener('click', confirmPromoSelection);
     confirmPaymentBtn.addEventListener('click', confirmPaymentSelection);
     finalConfirmBtn.addEventListener('click', finalConfirmBooking);
     
-    // Настройка способов оплаты
     document.querySelectorAll('.payment-method').forEach(method => {
         method.addEventListener('click', function() {
             paymentMethod = this.dataset.method;
@@ -77,7 +71,6 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     });
     
-    // Функции
     
     function initTimeSlider() {
         const sliderTicks = document.getElementById('slider-ticks');
@@ -100,10 +93,7 @@ document.addEventListener('DOMContentLoaded', function() {
         
         selectedDate = date;
         
-        // Тестовые данные вместо реального запроса
-        // Реальный запрос (закомментирован):
-        /*
-        fetch(`http://localhost:8080/pcs/${pcId}/bookings-by-day?date=${date}`, {
+        fetch(`http://5.129.207.193:8080/bookings/${pcId}/bookings-by-day?date=${date}`, {
             headers: {
                 'Authorization': `Bearer ${authToken}`
             }
@@ -119,26 +109,13 @@ document.addEventListener('DOMContentLoaded', function() {
             console.error('Error:', error);
             alert('Ошибка при загрузке данных о бронированиях');
         });
-        */
-        
-        // Тестовые данные
-        bookings = [
-            { startTime: `${date}T12:00:00.000Z`, endTime: `${date}T14:00:00.000Z` },
-            { startTime: `${date}T16:00:00.000Z`, endTime: `${date}T18:00:00.000Z` },
-            { startTime: `${date}T20:00:00.000Z`, endTime: `${date}T22:00:00.000Z` }
-        ];
-        
-        renderAvailableSlots();
-        stepDate.classList.remove('active');
-        stepTime.classList.add('active');
     }
-    
+
     function renderAvailableSlots() {
         availableSlots.innerHTML = '';
         startTimeSelect.innerHTML = '';
         endTimeSelect.innerHTML = '';
         
-        // Создаем массив всех возможных слотов (каждый час с 10:00 до 22:00)
         const allSlots = [];
         for (let hour = 10; hour <= 22; hour++) {
             const time = `${hour.toString().padStart(2, '0')}:00`;
@@ -149,9 +126,7 @@ document.addEventListener('DOMContentLoaded', function() {
             });
         }
         
-        // Рендерим доступные слоты
         allSlots.forEach(slot => {
-            // Для визуального отображения
             const slotElement = document.createElement('div');
             slotElement.className = `time-slot ${slot.booked ? 'booked' : ''}`;
             slotElement.textContent = slot.time;
@@ -163,7 +138,6 @@ document.addEventListener('DOMContentLoaded', function() {
             
             availableSlots.appendChild(slotElement);
             
-            // Для выпадающего списка начала
             if (!slot.booked) {
                 const option = document.createElement('option');
                 option.value = slot.hour;
@@ -172,22 +146,21 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         });
         
-        // Настройка выпадающих списков времени
         startTimeSelect.addEventListener('change', updateEndTimeOptions);
         timeSlider.addEventListener('input', updateEndTimeBySlider);
     }
-    
+
     function isTimeBooked(hour) {
-        const date = new Date(selectedDate);
-        const slotStart = new Date(date.setHours(hour, 0, 0, 0));
-        const slotEnd = new Date(date.setHours(hour + 1, 0, 0, 0));
+        const slotStart = new Date(`${selectedDate}T${hour.toString().padStart(2, '0')}:00:00`);
+        const slotEnd = new Date(`${selectedDate}T${(hour + 1).toString().padStart(2, '0')}:00:00`);
         
         return bookings.some(booking => {
-            const bookingStart = new Date(booking.startTime);
-            const bookingEnd = new Date(booking.endTime);
+            const bookingStart = new Date(booking.start_date);
+            const bookingEnd = new Date(booking.end_date);
+            
             return (slotStart >= bookingStart && slotStart < bookingEnd) || 
-                   (slotEnd > bookingStart && slotEnd <= bookingEnd) ||
-                   (slotStart <= bookingStart && slotEnd >= bookingEnd);
+                (slotEnd > bookingStart && slotEnd <= bookingEnd) ||
+                (slotStart <= bookingStart && slotEnd >= bookingEnd);
         });
     }
     
@@ -211,7 +184,6 @@ document.addEventListener('DOMContentLoaded', function() {
         timeSlider.disabled = false;
         timeSlider.min = 1;
         
-        // Максимальное время брони - до 22:00
         const maxEndHour = Math.min(22, startHour + 6);
         let maxAvailableHours = 1;
         
@@ -253,22 +225,18 @@ document.addEventListener('DOMContentLoaded', function() {
             return;
         }
         
-        // Загрузка акций
         loadPromotions();
     }
     
     function loadPromotions() {
-        // Тестовые данные вместо реального запроса
-        // Реальный запрос (закомментирован):
-        /*
-        fetch('http://localhost:8080/promotions', {
+        fetch('http://5.129.207.193:8080/promotions', {
             headers: {
                 'Authorization': `Bearer ${authToken}`
             }
         })
         .then(response => response.json())
         .then(data => {
-            promotions = data;
+            promotions = data.items;
             renderPromotions();
             stepTime.classList.remove('active');
             stepPromo.classList.add('active');
@@ -277,53 +245,33 @@ document.addEventListener('DOMContentLoaded', function() {
             console.error('Error:', error);
             alert('Ошибка при загрузке акций');
         });
-        */
-        
-        // Тестовые данные
-        promotions = [
-            {
-                id: "promo1",
-                type: "PERCENT",
-                promotionValue: 10,
-                description: "Скидка 10% на все бронирования",
-                start_date: `${selectedDate}T00:00:00.000Z`,
-                end_date: `${selectedDate}T23:59:59.000Z`,
-                platformFor: "PC"
-            },
-            {
-                id: "promo2",
-                type: "FIXED_AMOUNT",
-                promotionValue: 50,
-                description: "Скидка 50 руб. на вечерние бронирования",
-                start_date: `${selectedDate}T18:00:00.000Z`,
-                end_date: `${selectedDate}T22:00:00.000Z`,
-                platformFor: "PC"
-            }
-        ];
-        
-        renderPromotions();
-        stepTime.classList.remove('active');
-        stepPromo.classList.add('active');
     }
-    
+
     function renderPromotions() {
         promotionsList.innerHTML = '';
         
-        // Фильтруем акции, которые действуют в выбранное время
-        const bookingStart = new Date(`${selectedDate}T${selectedStartTime.toString().padStart(2, '0')}:00:00.000Z`);
-        const bookingEnd = new Date(`${selectedDate}T${selectedEndTime.toString().padStart(2, '0')}:00:00.000Z`);
+        if (!promotions || promotions.length === 0) {
+            promotionsList.innerHTML = '<p>Нет доступных акций</p>';
+            confirmPromoBtn.textContent = 'Продолжить без скидки';
+            updatePriceDisplay(null);
+            return;
+        }
+        
+        const bookingDate = new Date(selectedDate);
+        bookingDate.setHours(0, 0, 0, 0);
         
         const applicablePromotions = promotions.filter(promo => {
-            const promoStart = new Date(promo.start_date);
-            const promoEnd = new Date(promo.end_date);
+            const promoStart = new Date(promo.startDate);
+            const promoEnd = new Date(promo.endDate);
             
-            return (bookingStart >= promoStart && bookingStart < promoEnd) || 
-                   (bookingEnd > promoStart && bookingEnd <= promoEnd) ||
-                   (bookingStart <= promoStart && bookingEnd >= promoEnd);
+            promoStart.setHours(0, 0, 0, 0);
+            promoEnd.setHours(23, 59, 59, 999);
+            
+            return bookingDate >= promoStart && bookingDate <= promoEnd;
         });
         
         if (applicablePromotions.length === 0) {
-            promotionsList.innerHTML = '<p>Нет доступных акций для выбранного времени</p>';
+            promotionsList.innerHTML = '<p>Нет доступных акций для выбранной даты</p>';
             confirmPromoBtn.textContent = 'Продолжить без скидки';
         } else {
             applicablePromotions.forEach(promo => {
@@ -334,6 +282,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 promoEl.innerHTML = `
                     <h3>${promo.type === 'PERCENT' ? `Скидка ${promo.promotionValue}%` : `Скидка ${promo.promotionValue} руб.`}</h3>
                     <p>${promo.description}</p>
+                    <small>Акция действует с ${formatDate(promo.startDate)} по ${formatDate(promo.endDate)}</small>
                 `;
                 
                 promoEl.addEventListener('click', () => selectPromotion(promo));
@@ -343,7 +292,6 @@ document.addEventListener('DOMContentLoaded', function() {
             confirmPromoBtn.textContent = 'Продолжить без скидки';
         }
         
-        // Обновляем отображение цены
         updatePriceDisplay(null);
     }
     
@@ -397,7 +345,6 @@ document.addEventListener('DOMContentLoaded', function() {
         stepPayment.classList.remove('active');
         stepConfirm.classList.add('active');
         
-        // Заполняем сводку бронирования
         document.getElementById('summary-pc').textContent = `ПК ${pcId.replace('pc', '')}`;
         document.getElementById('summary-date').textContent = formatDate(selectedDate);
         document.getElementById('summary-time').textContent = 
@@ -421,35 +368,22 @@ document.addEventListener('DOMContentLoaded', function() {
     }
     
     function finalConfirmBooking() {
-        // Получаем данные профиля (тестовые вместо реального запроса)
-        // Реальный запрос (закомментирован):
-        /*
-        fetch('http://localhost:8080/profile', {
+
+        fetch('http://5.129.207.193:8080/auth/profile', {
             headers: {
                 'Authorization': `Bearer ${authToken}`
             }
         })
         .then(response => response.json())
-        .then(profile => {
-            createBooking(profile);
+        .then(data => {
+            createBooking(data);
         })
         .catch(error => {
             console.error('Error:', error);
             alert('Ошибка при загрузке профиля');
         });
-        */
         
-        // Тестовые данные профиля
-        const profile = {
-            id: "user123",
-            username: "testuser",
-            firstName: "Иван",
-            lastName: "Иванов",
-            phone: "+79123456789",
-            email: "test@example.com"
-        };
-        
-        createBooking(profile);
+        createBooking(data);
     }
     
     function createBooking(profile) {
@@ -478,9 +412,7 @@ document.addEventListener('DOMContentLoaded', function() {
             finalPrice: finalPrice.toString()
         };
         
-        // Реальный запрос (закомментирован):
-        /*
-        fetch('http://localhost:8080/bookings', {
+        fetch('http://5.129.207.193:8080/bookings', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -491,18 +423,14 @@ document.addEventListener('DOMContentLoaded', function() {
         .then(response => response.json())
         .then(data => {
             alert('Бронирование успешно создано!');
-            window.location.href = '/profile.html';
+            window.location.href = '../profile/Profile.html';
         })
         .catch(error => {
             console.error('Error:', error);
             alert('Ошибка при создании бронирования');
         });
-        */
-        
-        // Тестовый ответ
-        console.log('Booking data:', bookingData);
-        alert('Бронирование успешно создано! (тестовый режим)');
-        window.location.href = '/index.html';
+
+        alert('Booking data:', bookingData);
     }
     
     function formatDate(dateString) {

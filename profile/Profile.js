@@ -5,150 +5,127 @@ let branchesData = [];
 
 if (!authToken) {
   window.location.href = '/login/Login.html';
-  alert("токена нет");
 }
 
-const testProfileData = {
-  id: "user123",
-  username: "KERRIGAN",
-  email: "kerrigan@example.com",
-  firstName: "Sarah",
-  lastName: "Kerrigan",
-  phone: "+79123456789"
-};
-
-const testBookingsData = [
-  {
-    id: "booking1",
-    firstName: "Sarah",
-    lastName: "Kerrigan",
-    phone: "+79123456789",
-    email: "kerrigan@example.com",
-    pcId: "pc3",
-    startTime: "2025-06-28T10:00:00.000Z",
-    endTime: "2025-06-28T12:00:00.000Z",
-    paymentMethod: "QR_ONLINE",
-    finalPrice: "300 ₽",
-    qrConfirmationId: "qr-confirm-123",
-    qrPaymentId: "qr-pay-123"
-  },
-  {
-    id: "booking2",
-    firstName: "Sarah",
-    lastName: "Kerrigan",
-    phone: "+79123456789",
-    email: "kerrigan@example.com",
-    pcId: "pc5",
-    startTime: "2025-06-29T14:00:00.000Z",
-    endTime: "2025-06-29T16:00:00.000Z",
-    paymentMethod: "QR_OFFLINE",
-    finalPrice: "500 ₽",
-    qrConfirmationId: "qr-confirm-456",
-    qrPaymentId: "qr-pay-456"
-  }
-];
-
-const testBranchesData = [
-  { id: "branch1", name: "Филиал Центральный" },
-  { id: "branch2", name: "Филиал Северный" },
-  { id: "branch3", name: "Филиал Западный" }
-];
-
-const testPcsData = {
-  branch1: [
-    { id: "pc1", number: "1", status: "FREE", priceLevel: "STANDARD", positionX: 0, positionY: 0 },
-    { id: "pc2", number: "2", status: "FREE", priceLevel: "EXTRA", positionX: 1, positionY: 0 },
-    { id: "pc3", number: "3", status: "BUSY", priceLevel: "STANDARD", positionX: 0, positionY: 1 },
-    { id: "pc4", number: "4", status: "BOOKED", priceLevel: "VIP", positionX: 1, positionY: 1 }
-  ],
-  branch2: [
-    { id: "pc5", number: "1", status: "FREE", priceLevel: "VIP", positionX: 0, positionY: 0 },
-    { id: "pc6", number: "2", status: "BOOKED", priceLevel: "EXTRA", positionX: 1, positionY: 0 },
-    { id: "pc7", number: "3", status: "FREE", priceLevel: "STANDARD", positionX: 0, positionY: 1 }
-  ],
-  branch3: [
-    { id: "pc8", number: "1", status: "BUSY", priceLevel: "EXTRA", positionX: 0, positionY: 0 },
-    { id: "pc9", number: "2", status: "FREE", priceLevel: "STANDARD", positionX: 1, positionY: 0 },
-    { id: "pc10", number: "3", status: "BOOKED", priceLevel: "VIP", positionX: 0, positionY: 1 },
-    { id: "pc11", number: "4", status: "FREE", priceLevel: "EXTRA", positionX: 1, positionY: 1 }
-  ]
-};
-
-function loadProfileData() {
-
-  fetch('http://localhost:8080/auth/profile', {
-    headers: {
-      'Authorization': `Bearer ${authToken}`
-    }
-  })
-  .then(response => {
+async function loadProfileData() {
+  try {
+    const response = await fetch('http://5.129.207.193:8080/auth/profile', {
+      headers: { 'Authorization': `Bearer ${authToken}` }
+    });
     if (!response.ok) throw new Error('Ошибка загрузки профиля');
-    return response.json();
-  })
-  .then(data => {
-    profileData = data;
+    profileData = await response.json();
     renderProfileInfo();
-  })
-  .catch(error => {
+    return profileData;
+  } catch (error) {
     console.error('Ошибка:', error);
-    profileData = testProfileData;
-    renderProfileInfo();
-  });
-
+    window.location.href = '/login/Login.html';
+  }
 }
 
-function loadBookingsData() {
-
-  fetch('http://localhost:8080/auth/profile/bookings', {
-    headers: {
-      'Authorization': `Bearer ${authToken}`
-    }
-  })
-  .then(response => {
+async function loadBookingsData() {
+  try {
+    const response = await fetch(`http://5.129.207.193:8080/bookings/user?email=${profileData.email}`, {
+      headers: { 'Authorization': `Bearer ${authToken}` }
+    });
     if (!response.ok) throw new Error('Ошибка загрузки бронирований');
-    return response.json();
-  })
-  .then(data => {
-    bookingsData = data;
-    loadBranchesData();
-  })
-  .catch(error => {
+    bookingsData = await response.json();
+    await loadBranchesData();
+  } catch (error) {
     console.error('Ошибка:', error);
-    bookingsData = testBookingsData;
-    loadBranchesData();
-  });
-  
+  }
 }
 
-function loadBranchesData() {
-
-  fetch('http://localhost:8080/branches', {
-    headers: {
-      'Authorization': `Bearer ${authToken}`
-    }
-  })
-  .then(response => {
+async function loadBranchesData() {
+  try {
+    const response = await fetch('http://5.129.207.193:8080/branches', {
+      headers: { 'Authorization': `Bearer ${authToken}` }
+    });
     if (!response.ok) throw new Error('Ошибка загрузки филиалов');
-    return response.json();
-  })
-  .then(data => {
-    branchesData = data;
+    branchesData = await response.json();
     renderBookingsTable();
-  })
-  .catch(error => {
+  } catch (error) {
     console.error('Ошибка:', error);
-    branchesData = testBranchesData;
-    renderBookingsTable();
+  }
+}
+
+function findBranchByPcId(pcId) {
+  return branchesData.find(branch => 
+    branch.places?.some(place => place.hasPc && place.pcId === Number(pcId))
+  );
+}
+
+async function renderBookingsTable() {
+  const bookingsTable = document.getElementById('bookings-table');
+  let rowsHtml = '';
+
+  bookingsData.forEach((booking, index) => {
+    const startDate = new Date(booking.startTime);
+    const endDate = new Date(booking.endTime);
+    const dateStr = startDate.toLocaleDateString('ru-RU');
+    const timeStr = `${startDate.toLocaleTimeString('ru-RU', {hour: '2-digit', minute:'2-digit'})} - ${endDate.toLocaleTimeString('ru-RU', {hour: '2-digit', minute:'2-digit'})}`;
+    
+    const branchInfo = findBranchByPcId(booking.pcId);
+    const branchName = branchInfo?.name || 'Неизвестный филиал';
+    
+    const status = booking.paymentMethod === 'QR_ONLINE' ? 'Оплачено' : 'Необходимо оплатить';
+    const qrId = booking.paymentMethod === 'QR_ONLINE' ? `qr-confirm-${index}` : `qr-pay-${index}`;
+    
+    rowsHtml += `
+      <tr class="booking-row" onclick="toggleBookingDetails(${index})">
+        <td>${dateStr}<br>${timeStr}</td>
+        <td>${branchName}</td>
+        <td>${status}</td>
+      </tr>
+      <tr class="booking-details" id="booking-details-${index}">
+        <td colspan="3">
+          <div>
+            <p><strong>Имя:</strong> ${booking.firstName} ${booking.lastName}</p>
+            <p><strong>Телефон:</strong> ${booking.phone}</p>
+            <p><strong>Email:</strong> ${booking.email}</p>
+            <p><strong>Сумма:</strong> ${booking.finalPrice}</p>
+            ${booking.paymentMethod === 'QR_OFFLINE' ? `
+              <div class="qr-container">
+                <p>QR-код для оплаты:</p>
+                <img id="qr-pay-${index}" class="qr-code" alt="QR-код для оплаты">
+              </div>
+            ` : `
+              <div class="qr-container">
+                <p>QR-код подтверждения:</p>
+                <img id="qr-confirm-${index}" class="qr-code" alt="QR-код подтверждения">
+              </div>
+            `}
+            <button class="cancel-btn" onclick="cancelBooking('${booking.id}', event)">Отменить бронь</button>
+          </div>
+        </td>
+      </tr>
+    `;
   });
 
+  bookingsTable.innerHTML = `
+    <table>
+      <thead>
+        <tr>
+          <th>Дата и время</th>
+          <th>Адрес</th>
+          <th>Статус</th>
+        </tr>
+      </thead>
+      <tbody>${rowsHtml}</tbody>
+    </table>
+  `;
+
+  bookingsData.forEach((booking, index) => {
+    if (booking.paymentMethod === 'QR_ONLINE' && booking.qrConfirmationId) {
+      loadQRCode(booking.qrConfirmationId, `qr-confirm-${index}`);
+    } else if (booking.paymentMethod === 'QR_OFFLINE' && booking.qrPaymentId) {
+      loadQRCode(booking.qrPaymentId, `qr-pay-${index}`);
+    }
+  });
 }
 
 function loadQRCode(id, elementId) {
-
-  fetch(`http://localhost:8080/files/${id}`, {
-    headers: {
-      'Authorization': `Bearer ${authToken}`
-    }
+  fetch(`http://5.129.207.193:8080/files/${id}`, {
+    headers: { 'Authorization': `Bearer ${authToken}` }
   })
   .then(response => {
     if (!response.ok) throw new Error('Ошибка загрузки QR-кода');
@@ -162,7 +139,6 @@ function loadQRCode(id, elementId) {
     console.error('Ошибка:', error);
     document.getElementById(elementId).src = '../pictures/default-qr.svg';
   });
-
 }
 
 function renderProfileInfo() {
@@ -177,120 +153,29 @@ function renderProfileInfo() {
   `;
 }
 
-function renderBookingsTable() {
-  const bookingsTable = document.getElementById('bookings-table');
-  bookingsTable.innerHTML = `
-    <table>
-      <thead>
-        <tr>
-          <th>Дата и время</th>
-          <th>Адрес</th>
-          <th>Статус</th>
-        </tr>
-      </thead>
-      <tbody>
-        ${bookingsData.map((booking, index) => {
-          const startDate = new Date(booking.startTime);
-          const endDate = new Date(booking.endTime);
-          const dateStr = startDate.toLocaleDateString('ru-RU');
-          const timeStr = `${startDate.toLocaleTimeString('ru-RU', {hour: '2-digit', minute:'2-digit'})} - ${endDate.toLocaleTimeString('ru-RU', {hour: '2-digit', minute:'2-digit'})}`;
-          
-          const branchInfo = findBranchByPcId(booking.pcId);
-          const branchName = branchInfo ? branchInfo.name : 'Неизвестный филиал';
-          
-          const status = booking.paymentMethod === 'QR_ONLINE' ? 'Оплачено' : 'Необходимо оплатить';
-          const qrId = booking.paymentMethod === 'QR_ONLINE' ? `qr-confirm-${index}` : `qr-pay-${index}`;
-          
-          return `
-            <tr class="booking-row" onclick="toggleBookingDetails(${index})">
-              <td>${dateStr}<br>${timeStr}</td>
-              <td>${branchName}</td>
-              <td>${status}</td>
-            </tr>
-            <tr class="booking-details" id="booking-details-${index}">
-              <td colspan="3">
-                <div>
-                  <p><strong>Имя:</strong> ${booking.firstName} ${booking.lastName}</p>
-                  <p><strong>Телефон:</strong> ${booking.phone}</p>
-                  <p><strong>Email:</strong> ${booking.email}</p>
-                  <p><strong>Сумма:</strong> ${booking.finalPrice}</p>
-                  ${booking.paymentMethod === 'QR_OFFLINE' ? `
-                    <div class="qr-container">
-                      <p>QR-код для оплаты:</p>
-                      <img id="qr-pay-${index}" class="qr-code" alt="QR-код для оплаты">
-                    </div>
-                  ` : `
-                    <div class="qr-container">
-                      <p>QR-код подтверждения:</p>
-                      <img id="qr-confirm-${index}" class="qr-code" alt="QR-код подтверждения">
-                    </div>
-                  `}
-                  <button class="cancel-btn" onclick="cancelBooking('${booking.id}', event)">Отменить бронь</button>
-                </div>
-              </td>
-            </tr>
-          `;
-        }).join('')}
-      </tbody>
-    </table>
-  `;
-
-  bookingsData.forEach((booking, index) => {
-    if (booking.paymentMethod === 'QR_ONLINE' && booking.qrConfirmationId) {
-      loadQRCode(booking.qrConfirmationId, `qr-confirm-${index}`);
-    } else if (booking.paymentMethod === 'QR_OFFLINE' && booking.qrPaymentId) {
-      loadQRCode(booking.qrPaymentId, `qr-pay-${index}`);
-    }
-  });
-}
-
-async function findBranchByPcId(pcId) {
-
-  for (const branch of branchesData) {
-    const response = await fetch(`http://localhost:8080/branches/${branch.id}/pcs`, {
-      headers: {
-        'Authorization': `Bearer ${authToken}`
-      }
-    });
-    const pcs = await response.json();
-    if (pcs.some(pc => pc.id === pcId)) {
-      return branch;
-    }
-  }
-  return null;
-
-}
-
 function toggleBookingDetails(index) {
   const details = document.getElementById(`booking-details-${index}`);
   details.classList.toggle('active');
 }
 
-function cancelBooking(bookingId, event) {
+async function cancelBooking(bookingId, event) {
   event.stopPropagation();
   
   if (!confirm('Вы уверены, что хотите отменить бронирование?')) {
     return;
   }
 
-  fetch(`http://localhost:8080/api/bookings/${bookingId}/cancel`, {
-    method: 'PATCH',
-    headers: {
-      'Authorization': `Bearer ${authToken}`
-    }
-  })
-  .then(response => {
+  try {
+    const response = await fetch(`http://5.129.207.193:8080/bookings/${bookingId}/cancel`, {
+      method: 'DELETE',
+      headers: { 'Authorization': `Bearer ${authToken}` }
+    });
     if (!response.ok) throw new Error('Ошибка отмены бронирования');
-    loadBookingsData();
-  })
-  .catch(error => {
+    await loadBookingsData();
+  } catch (error) {
     console.error('Ошибка:', error);
     alert('Не удалось отменить бронирование');
-  });
-
-  alert(`Бронирование ${bookingId} отменено (тестовый режим)`);
-  bookingsData = bookingsData.filter(b => b.id !== bookingId);
-  renderBookingsTable();
+  }
 }
 
 document.getElementById('edit-profile-btn').addEventListener('click', () => {
@@ -310,7 +195,7 @@ document.getElementById('cancel-edit-btn').addEventListener('click', () => {
   document.getElementById('edit-profile-form').style.display = 'none';
 });
 
-document.getElementById('profile-form').addEventListener('submit', (e) => {
+document.getElementById('profile-form').addEventListener('submit', async (e) => {
   e.preventDefault();
   
   const updatedData = {
@@ -322,30 +207,24 @@ document.getElementById('profile-form').addEventListener('submit', (e) => {
     birthday: document.getElementById('birthday').value
   };
 
-  fetch('http://localhost:8080/auth/profile', {
-    method: 'PUT',
-    headers: {
-      'Authorization': `Bearer ${authToken}`,
-      'Content-Type': 'application/json'
-    },
-    body: JSON.stringify(updatedData)
-  })
-  .then(response => {
+  try {
+    const response = await fetch('http://5.129.207.193:8080/auth/profile', {
+      method: 'PUT',
+      headers: {
+        'Authorization': `Bearer ${authToken}`,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify(updatedData)
+    });
     if (!response.ok) throw new Error('Ошибка обновления профиля');
     location.reload();
-  })
-  .catch(error => {
+  } catch (error) {
     console.error('Ошибка:', error);
     alert('Не удалось обновить профиль');
-  });
-
-  profileData = { ...profileData, ...updatedData };
-  document.getElementById('profile-info').style.display = 'block';
-  document.getElementById('edit-profile-form').style.display = 'none';
-  renderProfileInfo();
+  }
 });
 
-document.addEventListener('DOMContentLoaded', () => {
-  loadProfileData();
-  loadBookingsData();
+document.addEventListener('DOMContentLoaded', async () => {
+  await loadProfileData();
+  await loadBookingsData();
 });

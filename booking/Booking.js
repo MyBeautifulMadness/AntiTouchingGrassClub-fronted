@@ -15,7 +15,7 @@ if (!authToken) {
 
 async function loadBranches() {
   try {
-    const response = await fetch('http://localhost:8080/branches', {
+    const response = await fetch('http://5.129.207.193:8080/branches', {
       headers: {
         'accept': '*/*',
         'Authorization': `Bearer ${authToken}`
@@ -65,7 +65,7 @@ document.addEventListener('click', (e) => {
 
 async function loadBranchComputers(branchId, width, height) {
   try {
-    const response = await fetch(`http://localhost:8080/branches/${branchId}/pcs`, {
+    const response = await fetch(`http://5.129.207.193:8080/branches/${branchId}/pcs`, {
       headers: {
         'accept': '*/*',
         'Authorization': `Bearer ${authToken}`
@@ -167,7 +167,7 @@ function handlePcClick(pcId) {
 
 async function loadPcDetails(pcId) {
   try {
-    const response = await fetch(`http://localhost:8080/branches/${currentBranchId}/pcs/${pcId}`, {
+    const response = await fetch(`http://5.129.207.193:8080/branches/${currentBranchId}/pcs/${pcId}`, {
       headers: {
         'accept': '*/*',
         'Authorization': `Bearer ${authToken}`
@@ -202,7 +202,26 @@ function renderPcDetails(details) {
         <span class="pc-spec-label">Видеокарта</span>
         <span class="pc-spec-value">${details.gpu}</span>
       </div>
-      <!-- остальные характеристики -->
+      <div class="pc-spec-item">
+        <span class="pc-spec-label">Материнская плата</span>
+        <span class="pc-spec-value">${details.motherboard}</span>
+      </div>
+      <div class="pc-spec-item">
+        <span class="pc-spec-label">Оперативная память</span>
+        <span class="pc-spec-value">${details.ram}</span>
+      </div>
+      <div class="pc-spec-item">
+        <span class="pc-spec-label">Накопитель</span>
+        <span class="pc-spec-value">${details.disk}</span>
+      </div>
+      <div class="pc-spec-item">
+        <span class="pc-spec-label">Доступные игры</span>
+        <span class="pc-spec-value">${details.gamesInstalled}</span>
+      </div>
+      <div class="pc-spec-item">
+        <span class="pc-spec-label">Монитор</span>
+        <span class="pc-spec-value">${details.monitorHz}Hz</span>
+      </div>
     </div>
   `;
 

@@ -13,7 +13,7 @@ document.addEventListener('DOMContentLoaded', function() {
       password: password
     };
     
-    fetch('http://localhost:8080/auth/login', {
+    fetch('http://5.129.207.193:8080/auth/login', {
       method: 'POST',
       headers: {
         'accept': 'application/json',

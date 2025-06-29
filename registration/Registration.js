@@ -43,7 +43,7 @@ document.addEventListener('DOMContentLoaded', function() {
     submitButton.textContent = 'Регистрация...';
     submitButton.disabled = true;
     
-    fetch('http://localhost:8080/auth/register', {
+    fetch('http://5.129.207.193:8080/auth/register', {
       method: 'POST',
       headers: {
         'accept': '*/*',

@@ -2,7 +2,7 @@ let currentSlide = 0;
 let promotions = [];
 
 function initSlider() {
-  fetch('http://localhost:8080/promotions')
+  fetch('http://5.129.207.193:8080/promotions')
     .then(response => {
       if (!response.ok) throw new Error('Ошибка загрузки акций');
       return response.json();
@@ -20,13 +20,12 @@ function initSlider() {
     })
     .catch(error => {
       console.error('Ошибка:', error);
-      // В случае ошибки просто не показываем слайдер
       document.querySelector('.slider').style.display = 'none';
     });
 }
 
 function loadPromoImage(imageId, elementId) {
-  fetch(`http://localhost:8080/files/${imageId}`, {
+  fetch(`http://5.129.207.193:8080/files/${imageId}`, {
     headers: {
       'accept': 'image/*'
     }
@@ -61,8 +60,8 @@ function renderSlides() {
     const slide = document.createElement('div');
     slide.className = 'slide';
     
-    const startDate = formatDate(promo.start_date);
-    const endDate = formatDate(promo.end_date);
+    const startDate = formatDate(promo.startDate);
+    const endDate = formatDate(promo.endDate);
     
     slide.innerHTML = `
       <div class="slide-text">
@@ -110,9 +109,9 @@ function formatDate(dateString) {
 function getPromoTitle(promo) {
   switch(promo.type) {
     case 'PERCENT':
-      return `Скидка ${promo.value}%`;
+      return `Скидка ${promo.promotionValue}%`;
     case 'FIXED_AMOUNT':
-      return `Бонус ${promo.value}₽`;
+      return `Бонус ${promo.promotionValue}₽`;
     default:
       return 'Акция';
   }
@@ -131,16 +130,16 @@ function updateSlider() {
   });
 }
 
-document.querySelector('.arrow.left').addEventListener('click', () => {
-  if (promotions.length > 0) {
-    currentSlide = (currentSlide - 1 + promotions.length) % promotions.length;
+document.querySelector('.arrow-left').addEventListener('click', () => {
+  if (promotions && promotions.items && promotions.items.length > 0) {
+    currentSlide = (currentSlide - 1 + promotions.items.length) % promotions.items.length;
     updateSlider();
   }
 });
 
-document.querySelector('.arrow.right').addEventListener('click', () => {
-  if (promotions.length > 0) {
-    currentSlide = (currentSlide + 1) % promotions.length;
+document.querySelector('.arrow-right').addEventListener('click', () => {
+  if (promotions && promotions.items && promotions.items.length > 0) {
+    currentSlide = (currentSlide + 1) % promotions.items.length;
     updateSlider();
   }
 });
