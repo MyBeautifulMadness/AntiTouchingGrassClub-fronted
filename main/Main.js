@@ -5,13 +5,19 @@ function checkAuth() {
   const authToken = localStorage.getItem('authToken');
   const profileLink = document.getElementById('profile-link');
   const loginBtn = document.getElementById('login-btn');
+  const exitBtn = document.getElementById('logout-link');
+  const bookingbtn = document.getElementById('booking-btn');
 
   if (authToken) {
     profileLink.style.display = 'block';
     loginBtn.style.display = 'none';
+    exitBtn.style.display = 'block';
+    bookingbtn.style.display = 'block';
   } else {
     profileLink.style.display = 'none';
     loginBtn.style.display = 'block';
+    exitBtn.style.display = 'none';
+    bookingbtn.style.display = 'none';
   }
 }
 
