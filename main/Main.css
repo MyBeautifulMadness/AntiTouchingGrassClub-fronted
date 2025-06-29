@@ -186,7 +186,7 @@ header {
   gap: 25px;
   margin: 30px auto 50px;
   width: 90%;
-  max-width: 1400px;
+  max-width: 1480px;
   background: transparent;
   border-radius: 15px;
   padding: 40px;
@@ -201,7 +201,7 @@ header {
 .offer {
   display: flex;
   align-items: center;
-  justify-content: space-between;
+  gap: 20px;
   background: #111;
   border-radius: 16px;
   padding: 25px 40px;
@@ -229,11 +229,18 @@ header {
 .offer-info p {
   font-size: 1.1rem;
   color: #ccc;
+  width: 90%;
+}
+.offer-info{
+  width: 80%;
+}
+.price-container{
+  width: 20%;
 }
 
 .price {
   font-size: 1.6rem;
-  white-space: nowrap;
+  text-align: right;
 }
 
 footer {
