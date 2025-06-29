@@ -98,9 +98,9 @@ main {
   height: 20px;
   border-radius: 4px;
 }
-.l100 { background: #81c784; }
-.l150 { background: #4caf50; }
-.l200 { background: #2e7d32; }
+
+.lDefault { background: #4caf50; }
+.lVIP { background: #2e7d32; }
 .lBusy { background: #e74c3c; }
 .lBooked { background: #f39c12; }
 .lEmpty { background: #666; }

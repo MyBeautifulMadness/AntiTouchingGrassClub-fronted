@@ -76,7 +76,7 @@ const testPcsData = {
 
 function loadProfileData() {
 
-  fetch('http://localhost:8080/profile', {
+  fetch('http://localhost:8080/auth/profile', {
     headers: {
       'Authorization': `Bearer ${authToken}`
     }
@@ -99,7 +99,7 @@ function loadProfileData() {
 
 function loadBookingsData() {
 
-  fetch('http://localhost:8080/profile/bookings', {
+  fetch('http://localhost:8080/auth/profile/bookings', {
     headers: {
       'Authorization': `Bearer ${authToken}`
     }
@@ -172,6 +172,7 @@ function renderProfileInfo() {
     <p><strong>Имя:</strong> ${profileData.firstName}</p>
     <p><strong>Фамилия:</strong> ${profileData.lastName}</p>
     <p><strong>Email:</strong> ${profileData.email}</p>
+    <p><strong>Birthday:</strong> ${profileData.birthday}</p>
     <p><strong>Телефон:</strong> ${profileData.phone}</p>
   `;
 }
@@ -296,9 +297,11 @@ document.getElementById('edit-profile-btn').addEventListener('click', () => {
   document.getElementById('profile-info').style.display = 'none';
   document.getElementById('edit-profile-form').style.display = 'block';
   
+  document.getElementById('username').value = profileData.username;
   document.getElementById('first-name').value = profileData.firstName;
   document.getElementById('last-name').value = profileData.lastName;
   document.getElementById('email').value = profileData.email;
+  document.getElementById('birthday').value = profileData.birthday;
   document.getElementById('phone').value = profileData.phone;
 });
 
@@ -314,10 +317,12 @@ document.getElementById('profile-form').addEventListener('submit', (e) => {
     firstName: document.getElementById('first-name').value,
     lastName: document.getElementById('last-name').value,
     email: document.getElementById('email').value,
-    phone: document.getElementById('phone').value
+    phone: document.getElementById('phone').value,
+    username: document.getElementById('username').value,
+    birthday: document.getElementById('birthday').value
   };
 
-  fetch('http://localhost:8080/profile', {
+  fetch('http://localhost:8080/auth/profile', {
     method: 'PUT',
     headers: {
       'Authorization': `Bearer ${authToken}`,

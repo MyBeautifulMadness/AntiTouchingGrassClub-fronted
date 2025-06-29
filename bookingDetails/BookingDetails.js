@@ -1,22 +1,21 @@
 document.addEventListener('DOMContentLoaded', function() {
-    // Проверка токена
+    
     const authToken = localStorage.getItem('authToken');
-    /*if (!authToken) {
+    if (!authToken) {
         window.location.href = '/login/Login.html';
         alert("Пожалуйста, авторизуйтесь для бронирования");
         return;
-    }*/
+    }
 
-    // Получаем параметры из URL
     const urlParams = new URLSearchParams(window.location.search);
     const pcId = urlParams.get('pcId');
     const pcPrice = parseInt(urlParams.get('price')) || 100;
     
-    /*if (!pcId) {
+    if (!pcId) {
         alert("Не указан компьютер для бронирования");
         window.location.href = '/index.html';
         return;
-    }*/
+    }
 
     // Элементы DOM
     const stepDate = document.getElementById('step-date');

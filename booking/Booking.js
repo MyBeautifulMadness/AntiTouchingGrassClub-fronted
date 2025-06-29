@@ -5,22 +5,23 @@ const grid = document.getElementById('computer-grid');
 const pcDetails = document.getElementById('pc-details');
 let currentBranchId = null;
 let selectedPcId = null;
-let testComputers = [];
+let computers = [];
 let authToken = localStorage.getItem('authToken');
-
 
 if (!authToken) {
   window.location.href = '/login/Login.html';
-  alert("токена нет");
+  alert("Токен авторизации отсутствует");
 }
 
 async function loadBranches() {
   try {
     const response = await fetch('http://localhost:8080/branches', {
       headers: {
+        'accept': '*/*',
         'Authorization': `Bearer ${authToken}`
       }
     });
+    
     if (!response.ok) throw new Error('Ошибка загрузки филиалов');
     
     const branches = await response.json();
@@ -36,14 +37,14 @@ async function loadBranches() {
         selectedBranch.querySelector('span').textContent = branch.name;
         branchSelector.classList.remove('active');
         currentBranchId = branch.id;
-        loadBranchMap(branch.id);
+        loadBranchComputers(branch.id, branch.width, branch.height);
       };
       branchOptions.appendChild(option);
     });
     
     selectedBranch.querySelector('span').textContent = branches[0].name;
     currentBranchId = branches[0].id;
-    loadBranchMap(branches[0].id);
+    loadBranchComputers(branches[0].id, branches[0].width, branches[0].height);
     
   } catch (error) {
     console.error('Ошибка:', error);
@@ -51,8 +52,6 @@ async function loadBranches() {
     branchOptions.innerHTML = '<div class="branch-option">Нет доступных филиалов</div>';
   }
 }
-
-
 
 selectedBranch.onclick = () => {
   branchSelector.classList.toggle('active');
@@ -64,52 +63,80 @@ document.addEventListener('click', (e) => {
   }
 });
 
-
-function loadBranchMap(currentBranchId) {
-
-  fetch(`http://localhost:8080/branches/${currentBranchId}/pcs`)
-    .then(res => res.json())
-    .then(data => {
-      testComputers = data;
-      renderGrid(data.map(c => ({
-        id: c.id,
-        row: c.positionY,
-        col: c.positionX,
-        status: c.status === 'FREE' ? 'available' : c.status.toLowerCase(),
-        price: c.priceLevel === 'STANDARD' ? 100 : c.priceLevel === 'EXTRA' ? 150 : c.priceLevel === 'VIP' ? 200 : 100,
-        number: c.number,
-        time: c.time || ''
-      })));
-    })
-    .catch(console.error);
+async function loadBranchComputers(branchId, width, height) {
+  try {
+    const response = await fetch(`http://localhost:8080/branches/${branchId}/pcs`, {
+      headers: {
+        'accept': '*/*',
+        'Authorization': `Bearer ${authToken}`
+      }
+    });
+    
+    if (!response.ok) throw new Error('Ошибка загрузки компьютеров');
+    
+    computers = await response.json();
+    renderGrid(branchId, width, height);
+    
+  } catch (error) {
+    console.error('Ошибка:', error);
+    computers = [];
+    renderGrid(branchId, width, height);
+  }
 }
 
-function renderGrid(cells) {
+function renderGrid(branchId, width, height) {
   grid.innerHTML = '';
-  if (!cells.length) return;
-  
-  const maxR = Math.max(...cells.map(c => c.row));
-  const maxC = Math.max(...cells.map(c => c.col));
-  grid.style.gridTemplateColumns = `repeat(${maxC+1}, 60px)`;
+  grid.style.gridTemplateColumns = `repeat(${width}, 60px)`;
 
-  for (let r = 0; r <= maxR; r++) {
-    for (let c = 0; c <= maxC; c++) {
-      const cell = cells.find(x => x.row === r && x.col === c);
+  const pcMap = {};
+  computers.forEach(pc => {
+    pcMap[`${pc.x},${pc.y}`] = pc;
+  });
+
+  for (let y = 0; y < height; y++) {
+    for (let x = 0; x < width; x++) {
       const div = document.createElement('div');
+      const pc = pcMap[`${x},${y}`];
       
-      if (cell) {
+      if (pc) {
         div.className = 'computer-cell';
-        const cls = cell.status === 'available' 
-          ? `available-${cell.price}` 
-          : cell.status;
-        div.classList.add(cls);
+        
+        // Определяем основной класс статуса
+        let statusClass = '';
+        switch(pc.status) {
+          case 'AVAILABLE':
+            statusClass = 'lDefault'; // Базовый класс для свободных
+            // Добавляем класс цены только для доступных ПК
+            if (pc.priceLevel) {
+              div.classList.add(`l${pc.priceLevel}`);
+            }
+            break;
+          case 'OCCUPIED':
+            statusClass = 'lBusy';
+            break;
+          case 'OUT_OF_SERVICE':
+            statusClass = 'lEmpty';
+            break;
+          default:
+            statusClass = 'lDefault';
+        }
+        
+        div.classList.add(statusClass);
+        
+        const endTime = pc.endTime ? new Date(pc.endTime).toLocaleTimeString([], {
+          hour: '2-digit',
+          minute: '2-digit'
+        }) : '';
+        
         div.innerHTML = `
-          <div class="cell-number">ПК ${cell.number}</div>
-          <div class="cell-time">${cell.time}</div>
+          <div class="cell-number">ПК ${pc.id}</div>
+          <div class="cell-time">${pc.status === 'OCCUPIED' ? endTime : ''}</div>
+          ${pc.status === 'AVAILABLE' ? `<div class="cell-price">${getPriceByLevel(pc.priceLevel)} ₽/час</div>` : ''}
         `;
-        div.onclick = () => handlePcClick(cell.id);
+        
+        div.onclick = () => handlePcClick(pc.id);
       } else {
-        div.className = 'computer-cell empty';
+        div.className = 'computer-cell lEmpty';
         div.textContent = '-';
       }
       
@@ -118,6 +145,14 @@ function renderGrid(cells) {
   }
 }
 
+function getPriceByLevel(priceLevel) {
+  switch (priceLevel) {
+    case 'VIP': return 500;
+    case 'EXTRA': return 300;
+    case 'STANDARD': return 200;
+    default: return 150;
+  }
+}
 
 function handlePcClick(pcId) {
   if (selectedPcId === pcId) {
@@ -130,95 +165,56 @@ function handlePcClick(pcId) {
   loadPcDetails(pcId);
 }
 
-function loadPcDetails(pcId) {
-
-  fetch(`http://localhost:8080/pcs/${pcId}`)
-    .then(res => res.json())
-    .then(data => {
-      const pcData = testComputers.find(pc => pc.id === pcId) || {};
-      renderPcDetails({
-        ...data,
-        status: pcData.status === 'FREE' ? 'available' : pcData.status.toLowerCase(),
-        time: pcData.time || ''
-      });
-    })
-    .catch(console.error);
-
-  const pcData = testComputers.find(pc => pc.id === pcId) || {};
-  
-  const testPcDetails = {
-    'pc1': { cpu: 'Intel Core i5-12400F', gpu: 'NVIDIA RTX 3060', motherboard: 'ASUS PRIME B660M-K', ram: '16GB DDR4 3200MHz', storage: '512GB NVMe SSD', games: 'CS2, Dota 2, Fortnite, GTA V', hz: 144 },
-    'pc2': { cpu: 'Intel Core i7-12700KF', gpu: 'NVIDIA RTX 3070 Ti', motherboard: 'MSI MAG B660 TOMAHAWK', ram: '32GB DDR4 3600MHz', storage: '1TB NVMe SSD', games: 'CS2, Dota 2, Fortnite, GTA V, Cyberpunk 2077', hz: 240 },
-    'pc3': { cpu: 'Intel Core i5-12400F', gpu: 'NVIDIA RTX 3060', motherboard: 'Gigabyte B660M DS3H', ram: '16GB DDR4 3200MHz', storage: '512GB NVMe SSD + 1TB HDD', games: 'CS2, Dota 2, Fortnite, GTA V', hz: 144 },
-    'pc4': { cpu: 'Intel Core i9-13900K', gpu: 'NVIDIA RTX 4090', motherboard: 'ASUS ROG MAXIMUS Z790 HERO', ram: '64GB DDR5 6000MHz', storage: '2TB NVMe SSD', games: 'Все игры', hz: 360 },
-    'pc5': { cpu: 'Intel Core i9-13900K', gpu: 'NVIDIA RTX 4090', motherboard: 'ASUS ROG MAXIMUS Z790 HERO', ram: '64GB DDR5 6000MHz', storage: '2TB NVMe SSD', games: 'Все игры', hz: 360 },
-    'pc6': { cpu: 'Intel Core i7-13700K', gpu: 'NVIDIA RTX 4080', motherboard: 'MSI MPG Z790 EDGE', ram: '32GB DDR5 5600MHz', storage: '1TB NVMe SSD', games: 'Все игры', hz: 240 },
-    'pc7': { cpu: 'Intel Core i5-13400F', gpu: 'NVIDIA RTX 4060 Ti', motherboard: 'ASUS TUF GAMING B760-PLUS', ram: '16GB DDR4 3200MHz', storage: '512GB NVMe SSD', games: 'CS2, Dota 2, Fortnite, GTA V', hz: 165 },
-    'pc8': { cpu: 'Intel Core i7-13700K', gpu: 'NVIDIA RTX 4070 Ti', motherboard: 'Gigabyte Z790 AORUS ELITE', ram: '32GB DDR5 5600MHz', storage: '1TB NVMe SSD', games: 'Все игры', hz: 240 },
-    'pc9': { cpu: 'Intel Core i5-12400F', gpu: 'NVIDIA RTX 3060', motherboard: 'ASUS PRIME B660M-K', ram: '16GB DDR4 3200MHz', storage: '512GB NVMe SSD', games: 'CS2, Dota 2, Fortnite, GTA V', hz: 144 },
-    'pc10': { cpu: 'Intel Core i9-13900K', gpu: 'NVIDIA RTX 4090', motherboard: 'ASUS ROG MAXIMUS Z790 HERO', ram: '64GB DDR5 6000MHz', storage: '2TB NVMe SSD', games: 'Все игры', hz: 360 },
-    'pc11': { cpu: 'Intel Core i7-12700KF', gpu: 'NVIDIA RTX 3080', motherboard: 'MSI MAG B660 TOMAHAWK', ram: '32GB DDR4 3600MHz', storage: '1TB NVMe SSD', games: 'CS2, Dota 2, Fortnite, GTA V, Cyberpunk 2077', hz: 240 }
-  };
-
-  const details = {
-    id: pcId,
-    ...testPcDetails[pcId],
-    status: pcData.status === 'FREE' ? 'available' : pcData.status.toLowerCase(),
-    time: pcData.time || ''
-  };
-
-  renderPcDetails(details);
+async function loadPcDetails(pcId) {
+  try {
+    const response = await fetch(`http://localhost:8080/branches/${currentBranchId}/pcs/${pcId}`, {
+      headers: {
+        'accept': '*/*',
+        'Authorization': `Bearer ${authToken}`
+      }
+    });
+    
+    if (!response.ok) throw new Error('Ошибка загрузки данных ПК');
+    
+    const details = await response.json();
+    renderPcDetails(details);
+    
+  } catch (error) {
+    console.error('Ошибка:', error);
+    pcDetails.innerHTML = '<p>Ошибка загрузки данных компьютера</p>';
+    pcDetails.classList.add('active');
+  }
 }
 
 function renderPcDetails(details) {
+  const endTime = details.endTime ? new Date(details.endTime).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}) : '';
+  const isAvailable = details.status === 'AVAILABLE';
+  const price = getPriceByLevel(details.priceLevel);
+
   let html = `
-    <h3>ПК ${details.id.replace('pc', '')} - Характеристики</h3>
+    <h3>ПК ${details.id} - Характеристики</h3>
     <div class="pc-specs">
       <div class="pc-spec-item">
         <span class="pc-spec-label">Процессор</span>
-        <span class="pc-spec-value">${details.cpu}</span>
+        <span class="pc-spec-value">${details.processor}</span>
       </div>
       <div class="pc-spec-item">
         <span class="pc-spec-label">Видеокарта</span>
         <span class="pc-spec-value">${details.gpu}</span>
       </div>
-      <div class="pc-spec-item">
-        <span class="pc-spec-label">Материнская плата</span>
-        <span class="pc-spec-value">${details.motherboard}</span>
-      </div>
-      <div class="pc-spec-item">
-        <span class="pc-spec-label">Оперативная память</span>
-        <span class="pc-spec-value">${details.ram}</span>
-      </div>
-      <div class="pc-spec-item">
-        <span class="pc-spec-label">Накопитель</span>
-        <span class="pc-spec-value">${details.storage}</span>
-      </div>
-      <div class="pc-spec-item">
-        <span class="pc-spec-label">Доступные игры</span>
-        <span class="pc-spec-value">${details.games}</span>
-      </div>
-      <div class="pc-spec-item">
-        <span class="pc-spec-label">Монитор</span>
-        <span class="pc-spec-value">${details.hz}Hz</span>
-      </div>
+      <!-- остальные характеристики -->
     </div>
   `;
 
-  const timeText = details.time || '';
-  const isAvailable = details.status === 'available';
-  const hasTimeInfo = timeText && (timeText.includes('-') || timeText.includes(':'));
-
   if (isAvailable) {
-    html += `<button class="book-button active">Забронировать</button>`;
-  } else if (hasTimeInfo) {
-    const endTime = timeText.includes('-') ? timeText.split('-')[1].trim() : timeText.trim();
-    html += `<button class="book-button active" data-time="${endTime}">
-              Забронировать (свободен с ${endTime})
+    html += `<button class="book-button active">Забронировать (${price} ₽/час)</button>`;
+  } else if (details.status === 'OCCUPIED' && endTime) {
+    html += `<button class="book-button inactive" disabled>
+              Занят до ${endTime}
             </button>`;
   } else {
     html += `<button class="book-button inactive" disabled>
-              Забронировать (время неизвестно)
+              Недоступен для бронирования
             </button>`;
   }
 
@@ -228,7 +224,7 @@ function renderPcDetails(details) {
   const bookButton = pcDetails.querySelector('.book-button.active');
   if (bookButton) {
     bookButton.onclick = () => {
-      alert(`Бронирование ПК ${details.id.replace('pc', '')}`);
+      window.location.href = `http://127.0.0.1:3000/bookingDetails/BookingDetails.html?pcId=${details.id}&price=${price}`;
     };
   }
 }

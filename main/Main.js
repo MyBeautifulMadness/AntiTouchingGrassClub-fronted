@@ -12,7 +12,7 @@ function initSlider() {
       renderSlides();
       updateSlider();
 
-      promotions.forEach((promo, index) => {
+      promotions.items.forEach((promo, index) => {
         if (promo.imageId) {
           loadPromoImage(promo.imageId, `promo-img-${index}`);
         }
@@ -26,7 +26,7 @@ function initSlider() {
 }
 
 function loadPromoImage(imageId, elementId) {
-  fetch(`http://localhost:8080/api/files/${imageId}`, {
+  fetch(`http://localhost:8080/files/${imageId}`, {
     headers: {
       'accept': 'image/*'
     }
@@ -57,7 +57,7 @@ function renderSlides() {
     return;
   }
 
-  promotions.forEach((promo, index) => {
+  promotions.items.forEach((promo, index) => {
     const slide = document.createElement('div');
     slide.className = 'slide';
     
