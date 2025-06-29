@@ -20,7 +20,30 @@ header {
   align-items: center;
   padding: 20px 40px;
   background: linear-gradient(to bottom, #111, #000);
-  flex-wrap: wrap;
+}
+
+.nav {
+  flex: 1;
+  margin-left: 40px;
+}
+
+.nav-container {
+  display: flex;
+  align-items: center;
+  max-width: 600px;
+  margin: 0 auto;
+}
+
+.nav a {
+  color: #fff;
+  text-decoration: none;
+  font-weight: bold;
+  margin: 0 15px;
+  white-space: nowrap;
+}
+
+.nav a:hover {
+  color: #00ff66;
 }
 
 .login-btn {
@@ -32,48 +55,12 @@ header {
   font-weight: bold;
   cursor: pointer;
   transition: all 0.3s ease;
-  margin-left: auto;
-  white-space: nowrap;
 }
 
 .login-btn:hover {
   background: #00ff66;
   color: #000;
 }
-
-.logo {
-  display: flex;
-  align-items: center;
-  gap: 15px;
-}
-
-.logo img {
-  height: 50px;
-}
-
-.nav a {
-  margin-left: 30px;
-  color: #fff;
-  text-decoration: none;
-  font-weight: bold;
-}
-
-.nav a:hover {
-  color: #00ff66;
-}
-
-.nav-link {
-  margin-left: 30px;
-  color: #fff;
-  text-decoration: none;
-  font-weight: bold;
-  white-space: nowrap;
-}
-
-.nav-link:hover {
-  color: #00ff66;
-}
-
 
 .slider {
   position: relative;
@@ -203,6 +190,12 @@ header {
   background: transparent;
   border-radius: 15px;
   padding: 40px;
+}
+
+.offer-link {
+  text-decoration: none;
+  color: inherit;
+  display: block;
 }
 
 .offer {

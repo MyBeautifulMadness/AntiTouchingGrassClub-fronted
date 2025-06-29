@@ -11,11 +11,13 @@
       <img src="../pictures/logo.png" alt="Logo">
     </div>
     <nav class="nav">
-      <a href="/booking/Booking.html">Бронирование</a>
-      <a href="/aboutus/AboutUs.html">О нас</a>
-      <a id="profile-link" href="/profile/Profile.html" class="nav-link">Личный кабинет</a>
+      <div class="nav-container">
+        <a href="/booking/Booking.html">Бронирование</a>
+        <a href="/aboutus/AboutUs.html">О нас</a>
+        <a id="profile-link" href="/profile/Profile.html">Личный кабинет</a>
+        <a id="login-btn" class="login-btn" href="/login/Login.html">Войти</a>
+      </div>
     </nav>
-    <a id="login-btn" class="login-btn nav-link" href="/login/Login.html">Войти</a>
   </header>
 
   <main class="main-content">
@@ -27,24 +29,31 @@
     </div>
 
     <div class="offers">
-      <div class="offer">
-        <img src="../pictures/pc.svg" alt="Standard Booking">
-        <div class="offer-info">
-          <h3>PC</h3>
-          <p>Наши мощные сетапы помогут тебе забыть о том как выглядит трава </p>
-          <p>(если уже забыл то возможно стоит повысить уровень)</p>
+
+
+      <a href="/booking/Booking.html" class="offer-link">
+        <div class="offer">
+          <img src="../pictures/pc.svg" alt="Standard Booking">
+          <div class="offer-info">
+            <h3>PC</h3>
+            <p>Наши мощные сетапы помогут тебе забыть о том как выглядит трава</p>
+            <p>(если уже забыл то возможно стоит повысить уровень)</p>
+          </div>
+          <div class="price">150 ₽ / час</div>
         </div>
-        <div class="price">150 ₽ / час</div>
-      </div>
-      <div class="offer">
-        <img src="../pictures/vr.svg" alt="Premium Booking">
-        <div class="offer-info">
-          <h3>VIP-Room</h3>
-          <p>В VIP-зале нашего компьютерного клуба трава всегда зелёная, политая и с эффектом RTX в ultra hd 4k… </p>
-          <p>По крайней мере так она выглядит в наших воспоминаниях (никто из админов не видел траву как минимум 3 года)</p>
+      </a>
+
+      <a href="/booking/Booking.html" class="offer-link">
+        <div class="offer">
+          <img src="../pictures/vr.svg" alt="Premium Booking">
+          <div class="offer-info">
+            <h3>VIP-Room</h3>
+            <p>В VIP-зале нашего компьютерного клуба трава всегда зелёная, политая и с эффектом RTX в ultra hd 4k…</p>
+            <p>По крайней мере так она выглядит в наших воспоминаниях (никто из админов не видел траву как минимум 3 года)</p>
+          </div>
+          <div class="price">500 ₽ / час</div>
         </div>
-        <div class="price">500 ₽ / час</div>
-      </div>
+      </a>
     </div>
   </main>
 
